@@ -8,7 +8,8 @@
 /skripsi
   /bab4          -> Draf BAB IV (Markdown per bagian)
   /diagrams      -> File diagram (.drawio untuk draw.io, .mmd untuk Mermaid)
-  /firmware      -> (nanti) Kode Arduino untuk tes hardware STEP 1–7
+  /firmware      -> Kode Arduino + setup/log (MQTT STEP 8, CoAP STEP 9, Dashboard STEP 10)
+  /dashboard     -> Flow Node-RED siap import (flow-dashboard.json)
   README.md
 ```
 
@@ -20,7 +21,7 @@
 | 4.1 Implementasi Sistem | 🚧 Dikerjakan bertahap |
 | Diagram arsitektur (.drawio) | ✅ Draf awal (rancangan, belum terverifikasi hardware) |
 | Tes hardware STEP 1–7 |✅ |
-| MQTT / CoAP / Dashboard | MQTT ✅, CoAP ✅, Dashboard On Progress|
+| MQTT / CoAP / Dashboard | MQTT ✅, CoAP ✅, Dashboard 🚧 (JSON masuk, visual + jembatan CoAP On Progress — lihat `firmware/setup-dashboard.md`)|
 
 ## Penanda Penting di Dokumen
 

@@ -87,6 +87,12 @@ void loop() {
     float busV = ina219.getBusVoltage_V();
     float cur = ina219.getCurrent_mA();
 
+    // PENGAMAN: cegah nan/inf masuk ke JSON (keduanya bikin JSON invalid
+    // -> Node-RED gagal parse -> dashboard diam di 0). INA219 longgar/tak
+    // terbaca sering menghasilkan nan atau inf.
+    if (isnan(busV) || isinf(busV)) busV = 0;
+    if (isnan(cur)  || isinf(cur))  cur  = 0;
+
     char payload[200];
     snprintf(payload, sizeof(payload),
       "{\"flow1\":%.2f,\"flow2\":%.2f,\"pressure_adc\":%d,\"voltage\":%.2f,\"current\":%.1f}",
