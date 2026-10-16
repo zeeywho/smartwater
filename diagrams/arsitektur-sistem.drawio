@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" agent="skripsi-smart-water" version="24.0.0">
+  <diagram name="Arsitektur Sistem" id="arch-swu-mqtt-coap">
+    <mxGraphModel dx="1050" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= EDGE LAYER ================= -->
+        <mxCell id="edgeLabel" value="EDGE LAYER (Perangkat Sensor)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="300" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="esp32" value="ESP32 (Node Sensor)&#10;Wi-Fi 802.11 b/g/n&#10;Baca sensor + susun payload JSON" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="230" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="flow1" value="Flow Sensor 1&#10;(YF-S201 type) → GPIO34" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="100" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="flow2" value="Flow Sensor 2&#10;(YF-S201 type) → GPIO27" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="140" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="press" value="Pressure Sensor&#10;→ voltage divider → GPIO35" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="180" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ina" value="INA219 (ukur energi)&#10;SDA→GPIO21, SCL→GPIO22 (I2C)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="330" width="220" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=classic;html=1;" edge="1" parent="1" source="flow1" target="esp32"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e2" style="endArrow=classic;html=1;" edge="1" parent="1" source="flow2" target="esp32"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e3" style="endArrow=classic;html=1;" edge="1" parent="1" source="press" target="esp32"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e4" style="endArrow=classic;html=1;" edge="1" parent="1" source="esp32" target="ina"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ================= NETWORK LAYER ================= -->
+        <mxCell id="netLabel" value="NETWORK LAYER (Komunikasi via Wi-Fi)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="440" y="60" width="300" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="mqtt" value="MQTT&#10;Publish-subscribe (TCP)&#10;Payload JSON (identik)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="150" width="220" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="coap" value="CoAP&#10;Request-response (UDP)&#10;Payload JSON (identik)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="480" y="260" width="220" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="Wi-Fi" style="endArrow=classic;html=1;" edge="1" parent="1" source="esp32" target="mqtt"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e6" value="Wi-Fi" style="endArrow=classic;html=1;" edge="1" parent="1" source="esp32" target="coap"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ================= APPLICATION LAYER ================= -->
+        <mxCell id="appLabel" value="APPLICATION LAYER (Laptop / Gateway)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="840" y="60" width="290" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="broker" value="Broker MQTT + CoAP Server&#10;(berjalan di laptop)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="875" y="150" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dash" value="Dashboard Monitoring&#10;(platform belum difinalisasi)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="875" y="240" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="alert" value="Notifikasi / Status Kebocoran" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="875" y="320" width="220" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e7" style="endArrow=classic;html=1;" edge="1" parent="1" source="mqtt" target="broker"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e8" style="endArrow=classic;html=1;" edge="1" parent="1" source="coap" target="broker"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e9" style="endArrow=classic;html=1;" edge="1" parent="1" source="broker" target="dash"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e10" style="endArrow=classic;html=1;" edge="1" parent="1" source="dash" target="alert"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Catatan status -->
+        <mxCell id="note" value="Catatan: RANCANGAN — belum diverifikasi hardware. Pin mapping &amp; jalur tegangan wajib dicek ulang setelah tes STEP 1–7." style="text;html=1;align=left;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="1090" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
