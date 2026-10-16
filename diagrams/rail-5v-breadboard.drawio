@@ -1,0 +1,57 @@
+<mxfile host="app.diagrams.net" agent="skripsi-smart-water" version="24.0.0">
+  <diagram name="Rail 5V Breadboard" id="rail5v-swu">
+    <mxGraphModel dx="1050" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Sumber daya -->
+        <mxCell id="pln" value="Colokan Listrik PLN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="40" y="60" width="160" height="40" as="geometry" /></mxCell>
+        <mxCell id="adaptor" value="Adaptor 5V 2A (fixed)&#10;AC → 5V DC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1"><mxGeometry x="40" y="130" width="160" height="50" as="geometry" /></mxCell>
+        <mxCell id="konektor" value="Konektor DC female hijau&#10;(sudah punya) → keluar + dan −" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="40" y="210" width="160" height="60" as="geometry" /></mxCell>
+        <mxCell id="ea1" style="endArrow=classic;html=1;" edge="1" parent="1" source="pln" target="adaptor"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" style="endArrow=classic;html=1;" edge="1" parent="1" source="adaptor" target="konektor"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Breadboard rails -->
+        <mxCell id="railplus" value="RAIL +  (merah) = 5V" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="320" y="110" width="620" height="40" as="geometry" /></mxCell>
+        <mxCell id="railminus" value="RAIL −  (biru) = GND (common)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;" vertex="1" parent="1"><mxGeometry x="320" y="420" width="620" height="40" as="geometry" /></mxCell>
+
+        <mxCell id="ek1" value="kabel +" style="endArrow=classic;html=1;strokeColor=#b85450;" edge="1" parent="1" source="konektor" target="railplus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ek2" value="kabel −" style="endArrow=classic;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="konektor" target="railminus"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ESP32 -->
+        <mxCell id="esp32" value="ESP32&#10;(power dari USB laptop)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;verticalAlign=top;" vertex="1" parent="1"><mxGeometry x="980" y="200" width="150" height="180" as="geometry" /></mxCell>
+        <mxCell id="espgnd" value="GND" style="text;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1"><mxGeometry x="990" y="240" width="60" height="24" as="geometry" /></mxCell>
+        <mxCell id="espg34" value="GPIO34" style="text;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1"><mxGeometry x="990" y="270" width="60" height="24" as="geometry" /></mxCell>
+        <mxCell id="espg27" value="GPIO27" style="text;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1"><mxGeometry x="990" y="300" width="60" height="24" as="geometry" /></mxCell>
+        <mxCell id="espg35" value="GPIO35" style="text;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;rounded=1;" vertex="1" parent="1"><mxGeometry x="990" y="330" width="60" height="24" as="geometry" /></mxCell>
+
+        <!-- common ground wire -->
+        <mxCell id="ecg" value="COMMON GROUND (wajib!)" style="endArrow=classic;html=1;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="railminus" target="espgnd"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Sensors -->
+        <mxCell id="flow1" value="Flow Sensor 1&#10;VCC | GND | SIGNAL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="340" y="210" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="flow2" value="Flow Sensor 2&#10;VCC | GND | SIGNAL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="540" y="210" width="150" height="60" as="geometry" /></mxCell>
+        <mxCell id="press" value="Pressure Sensor&#10;VCC | GND | OUT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1"><mxGeometry x="740" y="210" width="150" height="60" as="geometry" /></mxCell>
+
+        <!-- VCC sensors to rail+ -->
+        <mxCell id="ev1" value="VCC→5V" style="endArrow=classic;html=1;strokeColor=#b85450;" edge="1" parent="1" source="flow1" target="railplus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ev2" value="VCC→5V" style="endArrow=classic;html=1;strokeColor=#b85450;" edge="1" parent="1" source="flow2" target="railplus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ev3" value="VCC→5V" style="endArrow=classic;html=1;strokeColor=#b85450;" edge="1" parent="1" source="press" target="railplus"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- GND sensors to rail- -->
+        <mxCell id="eg1" value="GND" style="endArrow=classic;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="flow1" target="railminus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eg2" value="GND" style="endArrow=classic;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="flow2" target="railminus"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eg3" value="GND" style="endArrow=classic;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="press" target="railminus"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- SIGNAL sensors to ESP32 -->
+        <mxCell id="es1" value="SIGNAL→GPIO34" style="endArrow=classic;html=1;" edge="1" parent="1" source="flow1" target="espg34"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="es2" value="SIGNAL→GPIO27" style="endArrow=classic;html=1;" edge="1" parent="1" source="flow2" target="espg27"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="es3" value="OUT→(divider)→GPIO35" style="endArrow=classic;html=1;" edge="1" parent="1" source="press" target="espg35"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- Catatan -->
+        <mxCell id="note" value="KUNCI: (1) 5V sensor dari ADAPTOR via rail+, BUKAN dari ESP32. (2) ESP32 dipower USB. (3) GND adaptor-sensor-ESP32 harus SATU (common ground, garis biru putus-putus). (4) ESP32 cuma baca SINYAL via GPIO. (5) RANCANGAN — belum diverifikasi; cek level sinyal flow & tipe output pressure saat eksekusi." style="text;html=1;align=left;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;" vertex="1" parent="1"><mxGeometry x="40" y="500" width="1090" height="80" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
