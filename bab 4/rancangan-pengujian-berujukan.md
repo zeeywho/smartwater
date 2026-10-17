@@ -100,13 +100,22 @@ murni berasal dari karakteristik protokol.
 
 ### 2.1 End-to-End Latency
 - **Definisi:** selisih waktu data dikirim ESP32 sampai diterima gateway (ms).
-- **Metode:** [PILIH & KONFIRMASI DOSEN]
+- **METODE MENGACU REFERENSI (arahan dosen):** gunakan metode **end-to-end delay**
+  seperti pada **[M1] Thangavel et al. 2014** — mengukur delay pengiriman pesan dari
+  pengirim ke penerima melalui perantara/middleware (dalam kasus kita: ESP32 → gateway
+  laptop), diamati pada beberapa kondisi (termasuk variasi packet loss). Adaptasi
+  teknis (RTT vs NTP) menyesuaikan metode [M1] + konfirmasi dosen:
   - (a) Round-Trip Time (RTT): ESP32 catat T1 kirim → server balas → T2 terima;
     RTT=T2−T1; one-way ≈ RTT/2. Cocok CoAP (request-response). Untuk MQTT buat
     echo balasan via topik lain.
   - (b) NTP sync: samakan jam ESP32 & laptop ke NTP → latency = T_terima − T_kirim.
-- **Rujukan (web):** [R2], [R3], [R4]. **Rujukan (Mendeley):** [M1] (delay MQTT vs CoAP),
-  [M5] (time-to-completion/testbed), [M6] (latency + jembatan). → cocokkan saat final.
+- **Rujukan utama:** [M1] Thangavel 2014 (end-to-end delay MQTT vs CoAP). Pendukung:
+  [M5] (time-to-completion/testbed), [M6] (latency + jembatan); web: [R2], [R3], [R4].
+- **⚠️ VERIFIKASI DARI PDF [M1]** (wajib sebelum tulis final — PDF publik:
+  web.cs.wpi.edu/~rek/IoT/Papers/MQTT_CoAP_Performance.pdf):
+  - [ ] cara pasti mereka ukur end-to-end delay (one-way / RTT)
+  - [ ] berapa jumlah pesan per uji & ukuran payload
+  - [ ] level packet loss yang diuji
 - **Pengukuran dicatat:** per protokol, per skenario; simpan ke CSV.
 - **Hasil:** `[ISI SETELAH PENGUJIAN]`
 
@@ -156,10 +165,21 @@ murni berasal dari karakteristik protokol.
 | S3 QoS/mode | MQTT QoS 0 vs 1; CoAP NON vs CON | ✅ | ✅ | [R6] (QoS→reliability) |
 | S4 Durasi/stabilitas | kirim kontinu (mis. 30 menit) | ✅ | ✅ | [R1] (multiple samples) |
 
-### Jumlah pengulangan & sampel (KONFIRMASI DOSEN)
-- Tiap kombinasi diulang N kali (usul 3–5×) → ambil mean + standar deviasi.
-- Jumlah pesan per uji: usul 1000 pesan/skenario (sesuaikan dgn [R2] yang pakai
-  banyak iterasi). → `[TENTUKAN ANGKA SETELAH KONFIRMASI]`
+### Jumlah pengulangan & sampel N (ANGKA BERSUMBER DARI REFERENSI — arahan dosen)
+> Dosen: jumlah sampel N harus bersumber dari referensi, bukan angka pilihan sendiri.
+
+- **MENGACU [M2] Mishra & Guru 2026:** mereka memakai beban **iterasi 50 (nominal)**
+  dan **500 (high-stress)** untuk mensimulasikan kondisi normal vs beban tinggi.
+  → Usulan: adopsi **N = 50 dan 500 pengiriman** per skenario (atau sesuai angka
+  final [M2] setelah diverifikasi dari PDF). Kalimat skripsi: "jumlah pengulangan
+  pengiriman mengacu pada [Mishra & Guru, 2026] (50 dan 500 iterasi)."
+- **Alternatif/pendukung:** jumlah pesan uji besar dgn banyak iterasi juga dipakai
+  [M1] Thangavel 2014 — ambil angka pastinya dari PDF untuk justifikasi tambahan.
+- Tiap kondisi → ambil **mean + standar deviasi**.
+- **⚠️ VERIFIKASI DARI PDF [M2]/[M1]:**
+  - [ ] pastikan angka iterasi [M2] (50 & 500) dari isi paper, bukan hanya abstrak
+  - [ ] catat jumlah pesan/iterasi [M1] untuk pembanding
+  - [ ] konfirmasi ke dosen: pakai N dari [M2], [M1], atau kombinasi
 
 ---
 
