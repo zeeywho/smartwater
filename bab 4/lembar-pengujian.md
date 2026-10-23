@@ -22,12 +22,16 @@
 | Broker MQTT (versi) | Mosquitto ________ |
 | CoAP server (versi) | aiocoap ________ |
 | Firmware yang di-upload | [ ] mqtt-code.ino  [ ] coap-code.ino |
-| Payload JSON (ukuran byte) | ________ bytes |
-| Interval kirim | ________ s |
-| Jumlah pesan/iterasi (N) | ________ (rujuk [M2]: 50 / 500) |
-| INA219 terpasang seri? | [ ] Ya  [ ] Tidak |
+| Ukuran payload uji | [ ] 16 B  [ ] 64 B  [ ] 256 B  (rujuk [R1]) |
+| Jumlah iterasi (N) | ________ (rujuk [R1]: **30** per kombinasi) |
+| Mode transaksi | [ ] Cold Transaction (buka→kirim→putus) (rujuk [R1]) |
+| Jeda antar iterasi | ________ ms (rujuk [R1]: **4000 ms**) |
+| QoS / mode | MQTT: [ ] QoS 0 ; CoAP: [ ] CON  (rujuk [R1]) |
+| Jarak ESP32–router | ________ m (rujuk [R1]: **1.5 m LOS**) |
+| Wi-Fi channel | ________ (rujuk [R1]: **Ch.6, 2.4 GHz**) |
+| INA219 terpasang seri? | [ ] Ya  [ ] Tidak  (bila ukur energy) |
 | Air mengalir? | [ ] Ya  [ ] Tidak |
-| Catatan kondisi (cuaca sinyal, gangguan, dll) | ________________ |
+| Catatan kondisi (sinyal, gangguan, dll) | ________________ |
 
 ---
 
@@ -69,41 +73,51 @@
 
 ---
 
-## LEMBAR 3 — Pengujian Kinerja Protokol (INTI)
+## LEMBAR 3 — Pengujian Kinerja Protokol (INTI) — mengacu [R1]
 
-> Isi tabel di bawah untuk SETIAP kombinasi skenario × protokol. Satu baris = satu
-> kali uji (satu pengulangan). Pastikan kondisi MQTT & CoAP IDENTIK.
+> Skenario inti [R1]: variasi payload (16/64/256 B) × 2 protokol × **30 iterasi**.
+> Konstan: jarak 1.5 m LOS, Wi-Fi Ch.6, cold transaction, jeda 4000 ms, MQTT QoS0 / CoAP CON.
+> Satu baris = satu iterasi. Salin blok 3.A untuk tiap kombinasi payload × protokol.
 > Parameter & rujukan: lihat `rancangan-pengujian-berujukan.md` §2.
 
-### 3.A — Tabel data mentah per pengiriman/iterasi
+### 3.A — Tabel data mentah per iterasi (satu kombinasi)
 
-**Skenario: S____  |  Variasi: __________  |  Protokol: [ ] MQTT  [ ] CoAP  |  N = ____ (rujuk [M2])**
+**Payload: [ ] 16 B [ ] 64 B [ ] 256 B  |  Protokol: [ ] MQTT (QoS0) [ ] CoAP (CON)  |  N = 30 (rujuk [R1])**
 
-| Ulangan ke- | Pesan dikirim | Pesan diterima | Latency (ms) | Throughput (msg/s) | Packet loss (%) | Daya (mW) | Reliability (%) |
-|-------------|---------------|----------------|--------------|--------------------|-----------------|-----------|-----------------|
-| 1 | ______ | ______ | ______ | ______ | ______ | ______ | ______ |
-| 2 | ______ | ______ | ______ | ______ | ______ | ______ | ______ |
-| 3 | ______ | ______ | ______ | ______ | ______ | ______ | ______ |
-| 4 | ______ | ______ | ______ | ______ | ______ | ______ | ______ |
-| 5 | ______ | ______ | ______ | ______ | ______ | ______ | ______ |
-| **Mean** | | | ______ | ______ | ______ | ______ | ______ |
-| **Std dev** | | | ______ | ______ | ______ | ______ | ______ |
+| Iterasi | Kirim berhasil? | Latency/TTC (ms) | Throughput (byte/s) | Catatan |
+|---------|-----------------|------------------|---------------------|---------|
+| 1 | [ ] Ya [ ] Tidak | ______ | ______ | |
+| 2 | [ ] Ya [ ] Tidak | ______ | ______ | |
+| 3 | [ ] Ya [ ] Tidak | ______ | ______ | |
+| ... | ... | ... | ... | (lanjut sampai 30) |
+| 30 | [ ] Ya [ ] Tidak | ______ | ______ | |
 
-> Salin blok tabel 3.A ini untuk tiap kombinasi:
-> S1 (1s/5s/10s) × 2 protokol; S2 (normal/terbebani) × 2; S3 (QoS0/QoS1 ; NON/CON); S4 (durasi).
+**Statistik ringkas kombinasi ini (hitung dari 30 iterasi — rujuk [R1]):**
+| Statistik Latency (ms) | Nilai | | Metrik lain | Nilai |
+|------------------------|-------|-|-------------|-------|
+| Mean | ______ | | Packet Delivery Success Rate (%) | ______ |
+| Median | ______ | | Throughput rata-rata (byte/s) | ______ |
+| Std dev | ______ | | (opsional) Energy rata-rata (mW) | ______ |
+| Min | ______ | | | |
+| Max | ______ | | | |
 
-### 3.B — Checklist kombinasi yang sudah diuji
+> Rumus: Success Rate = (iterasi berhasil / 30) × 100%. Mean = Σx/30.
+> Std dev (sampel) = √(Σ(x−mean)² / (30−1)).
 
-| Skenario | Variasi | MQTT selesai? | CoAP selesai? |
-|----------|---------|---------------|---------------|
-| S1 | interval 1 s | [ ] | [ ] |
-| S1 | interval 5 s | [ ] | [ ] |
-| S1 | interval 10 s | [ ] | [ ] |
-| S2 | jaringan normal | [ ] | [ ] |
-| S2 | jaringan terbebani | [ ] | [ ] |
-| S3 | QoS0 / NON | [ ] | [ ] |
-| S3 | QoS1 / CON | [ ] | [ ] |
-| S4 | durasi kontinu (__ menit) | [ ] | [ ] |
+### 3.B — Checklist kombinasi yang sudah diuji (6 kombinasi inti [R1])
+
+| Payload | MQTT (QoS0) selesai? | CoAP (CON) selesai? |
+|---------|----------------------|---------------------|
+| 16 B | [ ] | [ ] |
+| 64 B | [ ] | [ ] |
+| 256 B | [ ] | [ ] |
+
+### 3.C — (OPSIONAL) Skenario tambahan — hanya bila disetujui dosen
+| Skenario | Variasi | MQTT | CoAP |
+|----------|---------|------|------|
+| Interval kirim | 1 / 5 / 10 s | [ ] | [ ] |
+| Kondisi jaringan | normal / terbebani | [ ] | [ ] |
+| Durasi kontinu | __ menit | [ ] | [ ] |
 
 ---
 
@@ -113,11 +127,17 @@
 
 | Parameter | Satuan | MQTT | CoAP | Protokol lebih baik | Catatan |
 |-----------|--------|------|------|---------------------|---------|
-| End-to-end Latency | ms | ______ | ______ | ________ | |
-| Throughput | msg/s | ______ | ______ | ________ | |
-| Packet Loss | % | ______ | ______ | ________ | |
-| Energy Consumption | mW / mWh | ______ | ______ | ________ | |
-| Reliability | % | ______ | ______ | ________ | |
+| Latency/TTC (mean) | ms | ______ | ______ | ________ | per payload: isi juga tabel bawah |
+| Throughput | byte/s | ______ | ______ | ________ | |
+| Packet Delivery Success Rate | % | ______ | ______ | ________ | |
+| (opsional) Energy | mW / mWh | ______ | ______ | ________ | rujuk [R5] |
+
+**Rincian Latency mean (ms) per ukuran payload — mengacu [R1]:**
+| Payload | MQTT (QoS0) | CoAP (CON) | Lebih cepat |
+|---------|-------------|------------|-------------|
+| 16 B | ______ | ______ | ________ |
+| 64 B | ______ | ______ | ________ |
+| 256 B | ______ | ______ | ________ |
 
 ---
 
@@ -132,11 +152,15 @@
 ---
 
 ## CHECKLIST PERSIAPAN SEBELUM UJI (contreng dulu biar nggak kelewat)
-- [ ] Metode latency final (RTT/NTP) sudah dikunci (rujuk [M1], konfirmasi dosen)
-- [ ] N pengulangan dikunci (rujuk [M2]: 50 & 500) & disetujui dosen
-- [ ] INA219 terpasang SERI (biar energy terukur, bukan 0)
+- [ ] Metode latency = time-to-completion (RTT-style, tanpa NTP) — rujuk [R1], konfirmasi dosen
+- [ ] N = 30 iterasi/kombinasi + payload 16/64/256 B — rujuk [R1], disetujui dosen
+- [ ] Mode Cold Transaction + jeda 4000 ms diset di firmware (rujuk [R1])
+- [ ] MQTT QoS 0 & CoAP CON diset di kode (rujuk [R1])
+- [ ] Jarak 1.5 m LOS & Wi-Fi 2.4 GHz Ch.6 diatur (rujuk [R1])
+- [ ] 3 varian payload JSON (~16/64/256 B) sudah dibuat
+- [ ] (bila energy masuk scope) INA219 terpasang SERI — rujuk [R5]
 - [ ] Koneksi dipermanenkan/diperkuat (hindari drop saat uji lama)
-- [ ] Script logging CSV siap (timestamp, protokol, parameter)
+- [ ] Script logging CSV siap (timestamp, protokol, payload, latency, status)
 - [ ] Broker Mosquitto `listener 1883 0.0.0.0` + firewall OK
 - [ ] CoAP server jalan + firewall UDP 5683 OK
 - [ ] Payload MQTT & CoAP IDENTIK (ukuran & isi sama)

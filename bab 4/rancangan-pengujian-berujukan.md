@@ -14,6 +14,33 @@
 
 ---
 
+## PARAMETER UJI TERKUNCI (mengacu [R1] Kirilov & Chikurtev 2026) ⭐
+
+> [R1] = rujukan UTAMA (gold standard) karena setup paling identik: ESP32, laptop
+> gateway (Mosquitto + aiocoap), Wi-Fi 2.4 GHz. Nilai di bawah diadopsi dari [R1]
+> kecuali ditandai. **Konfirmasi dosen sebelum dieksekusi.**
+
+| Aspek | Nilai (mengacu [R1]) | Rujukan |
+|-------|----------------------|---------|
+| Topologi | 1 node ESP32 → Router Wi-Fi 2.4 GHz (Ch.6) → Laptop gateway (Mosquitto + aiocoap) | [R1] |
+| Jarak | **1.5 m, Line-of-Sight (LOS)**, tanpa halangan | [R1] |
+| Mode transaksi | **Cold Transaction** (buka koneksi → kirim → putus) | [R1] |
+| Jeda antar iterasi | **4000 ms (4 detik)** | [R1] |
+| Ukuran payload | **16 B, 64 B, 256 B** (3 variasi) | [R1], [R4] |
+| Jumlah sampel (N) | **30 iterasi per kombinasi** protokol × payload | [R1], [R2] |
+| QoS/mode | **MQTT QoS 0** ; **CoAP CON (Confirmable, ACK)** | [R1], [R3] |
+| Metrik utama | Latency (mean/median/std/min/max), Packet Delivery Success Rate (%), Throughput (byte/s) | [R1], [R2], [R4] |
+
+> CATATAN penyesuaian penting:
+> - Angka N final = **30** (bukan 50/500). 50/500 berasal dari [M2]/Mishra (simulasi NS-3,
+>   konteks beda). Untuk setup hardware kita, [R1] (30 iterasi, ESP32 nyata) lebih tepat.
+> - Payload kita JSON. Siapkan 3 varian JSON berukuran ~16/64/256 byte agar selaras [R1].
+> - Variabel utama di [R1] = ukuran payload (bukan interval). Interval kirim & kondisi
+>   jaringan (S1/S2 lama) boleh jadi skenario TAMBAHAN bila disetujui dosen, tapi
+>   skenario INTI mengikuti [R1]: 3 payload × 30 iterasi × 2 protokol.
+
+---
+
 ## 0. Daftar Referensi Metode (kandidat sitasi)
 
 > Catatan kepatuhan: ringkasan di bawah diparafrasekan dari abstrak/snippet publik
@@ -22,7 +49,7 @@
 
 | Kode | Referensi | Relevansi untuk metode kita |
 |------|-----------|------------------------------|
-| [R1] | Kirilov, A., Chikurtev, D. "Assessing MQTT, CoAP, and HTTP Performance in Real-Life Scenarios on ESP32-Based IoT Nodes." MDPI (Engineering Proceedings). URL: https://www.mdpi.com/2673-4591/150/1/126 | **Paling mirip** — pakai ESP32, banding MQTT/CoAP/HTTP di kondisi terkontrol, banyak sampel. Rujukan untuk: pengujian berbasis node ESP32 & pengulangan sampel. |
+| [R1] | Kirilov, A., Chikurtev, D. "Assessing MQTT, CoAP, and HTTP Performance in Real-Life Scenarios on ESP32-Based IoT Nodes." MDPI (Engineering Proceedings, 2026). URL: https://www.mdpi.com/2673-4591/150/1/126 | ⭐ **RUJUKAN UTAMA (gold standard)** — setup paling identik (ESP32, laptop gateway Mosquitto+aiocoap, Wi-Fi 2.4GHz Ch.6, 1.5m LOS). Metode: Cold Transaction, jeda 4000ms, payload 16/64/256B, **30 iterasi/kombinasi**, MQTT QoS0 & CoAP CON. Metrik: latency (mean/median/std/min/max) + delivery success rate. → sumber parameter uji terkunci. |
 | [R2] | "A comparative analysis and implementation of CoAP and MQTT protocol for IoT communication." Springer (2025). URL: https://link.springer.com/article/10.1007/s41872-025-00324-7 | Rujukan untuk PARAMETER: message/second, throughput, packet success rate, packet loss rate, latency; banyak iterasi. CoAP throughput tinggi & latency rendah vs MQTT. |
 | [R3] | "Impact of CoAP and MQTT on NB-IoT System Performance." MDPI Sensors 19(1):7 (2019). URL: https://www.mdpi.com/1424-8220/19/1/7 | Rujukan untuk: latency & kapasitas sistem; temuan CoAP/UDP lebih baik di latency, MQTT/TCP tetap jalan saat beban rendah. |
 | [R4] | "A Performance Analysis of Internet of Things Networking Protocols (MQTT, CoAP, OPC UA)." MDPI Applied Sciences 11(11):4879 (2021). URL: https://www.mdpi.com/2076-3417/11/11/4879 | Rujukan untuk: metrik time-to-completion antar skenario; CoAP terendah. |
@@ -98,25 +125,18 @@ murni berasal dari karakteristik protokol.
 
 ## 2. Definisi & Metode Ukur Tiap Parameter (DENGAN RUJUKAN)
 
-### 2.1 End-to-End Latency
-- **Definisi:** selisih waktu data dikirim ESP32 sampai diterima gateway (ms).
-- **METODE MENGACU REFERENSI (arahan dosen):** gunakan metode **end-to-end delay**
-  seperti pada **[M1] Thangavel et al. 2014** — mengukur delay pengiriman pesan dari
-  pengirim ke penerima melalui perantara/middleware (dalam kasus kita: ESP32 → gateway
-  laptop), diamati pada beberapa kondisi (termasuk variasi packet loss). Adaptasi
-  teknis (RTT vs NTP) menyesuaikan metode [M1] + konfirmasi dosen:
-  - (a) Round-Trip Time (RTT): ESP32 catat T1 kirim → server balas → T2 terima;
-    RTT=T2−T1; one-way ≈ RTT/2. Cocok CoAP (request-response). Untuk MQTT buat
-    echo balasan via topik lain.
-  - (b) NTP sync: samakan jam ESP32 & laptop ke NTP → latency = T_terima − T_kirim.
-- **Rujukan utama:** [M1] Thangavel 2014 (end-to-end delay MQTT vs CoAP). Pendukung:
-  [M5] (time-to-completion/testbed), [M6] (latency + jembatan); web: [R2], [R3], [R4].
-- **⚠️ VERIFIKASI DARI PDF [M1]** (wajib sebelum tulis final — PDF publik:
-  web.cs.wpi.edu/~rek/IoT/Papers/MQTT_CoAP_Performance.pdf):
-  - [ ] cara pasti mereka ukur end-to-end delay (one-way / RTT)
-  - [ ] berapa jumlah pesan per uji & ukuran payload
-  - [ ] level packet loss yang diuji
-- **Pengukuran dicatat:** per protokol, per skenario; simpan ke CSV.
+### 2.1 End-to-End Latency / Time-to-Completion
+- **Definisi:** waktu dari data dikirim ESP32 sampai diterima/terkonfirmasi di gateway (ms).
+- **METODE MENGACU [R1] + [R4] (arahan dosen):** ukur **time-to-completion** tiap
+  transaksi dalam **Cold Transaction mode** (buka koneksi → kirim → putus) [R1].
+  Karena [R1] memakai CoAP **CON** (ada ACK) dan MQTT **QoS 0**, waktu transaksi
+  diukur pada sisi ESP32 (dari mulai kirim sampai selesai/ACK) → setara **RTT**,
+  sehingga TIDAK perlu NTP sync. Catat per iterasi.
+  - Statistik dari 30 iterasi: **mean, median, std dev, min, max** [R1].
+- **Rujukan:** [R1] Kirilov 2026 (metode latency ESP32, cold transaction),
+  [R4] Silva 2021 (time-to-completion), [R3] Larmo 2019 (justifikasi TCP vs UDP).
+- **⚠️ KONFIRMASI DOSEN:** metode time-to-completion (RTT-style, tanpa NTP) sesuai [R1].
+- **Pengukuran dicatat:** per protokol × payload (16/64/256 B); simpan ke CSV.
 - **Hasil:** `[ISI SETELAH PENGUJIAN]`
 
 ### 2.2 Throughput
@@ -156,30 +176,40 @@ murni berasal dari karakteristik protokol.
 ## 3. Skenario Pengujian — rujuk [R1], [R2], [R3]
 
 > Catatan: skenario "variasi jarak" dari proposal lama DIHAPUS (relevan untuk LoRa).
-> Konfirmasi persetujuan dosen. Diganti variasi frekuensi kirim & kondisi jaringan.
+> Konfirmasi persetujuan dosen.
 
-| Skenario | Variasi | MQTT | CoAP | Rujukan |
-|----------|---------|------|------|---------|
-| S1 Frekuensi kirim | interval 1 s / 5 s / 10 s | ✅ | ✅ | [R2] (banyak iterasi/msg-rate) |
-| S2 Kondisi jaringan | normal vs terbebani/interferensi | ✅ | ✅ | [R1] (real-life/terkontrol), [R3] (beban) |
-| S3 QoS/mode | MQTT QoS 0 vs 1; CoAP NON vs CON | ✅ | ✅ | [R6] (QoS→reliability) |
-| S4 Durasi/stabilitas | kirim kontinu (mis. 30 menit) | ✅ | ✅ | [R1] (multiple samples) |
+### Skenario INTI (mengacu [R1] — variabel utama = ukuran payload)
+| Skenario inti | Variasi | MQTT | CoAP | Iterasi | Rujukan |
+|---------------|---------|------|------|---------|---------|
+| SP — Variasi payload | 16 B | QoS 0 | CON | 30 | [R1], [R4] |
+| SP — Variasi payload | 64 B | QoS 0 | CON | 30 | [R1], [R4] |
+| SP — Variasi payload | 256 B | QoS 0 | CON | 30 | [R1], [R4] |
+
+→ Total: 3 payload × 2 protokol × 30 iterasi = **180 transaksi** (pola [R1]).
+Kondisi konstan: jarak 1.5 m LOS, Wi-Fi 2.4 GHz Ch.6, cold transaction, jeda 4000 ms.
+
+### Skenario TAMBAHAN (opsional — hanya bila disetujui dosen)
+| Skenario | Variasi | Rujukan | Catatan |
+|----------|---------|---------|---------|
+| S-freq | interval kirim 1/5/10 s | [R4] (sending rate → saturasi) | tambahan, bukan inti [R1] |
+| S-net | jaringan normal vs terbebani | [R3] (beban) | tambahan |
+| S-qos | MQTT QoS 0 vs 1; CoAP NON vs CON | [R6] (QoS→reliability) | tambahan |
+| S-durasi | kirim kontinu (mis. 30 menit) | [R1] | untuk reliability jangka panjang |
 
 ### Jumlah pengulangan & sampel N (ANGKA BERSUMBER DARI REFERENSI — arahan dosen)
 > Dosen: jumlah sampel N harus bersumber dari referensi, bukan angka pilihan sendiri.
 
-- **MENGACU [M2] Mishra & Guru 2026:** mereka memakai beban **iterasi 50 (nominal)**
-  dan **500 (high-stress)** untuk mensimulasikan kondisi normal vs beban tinggi.
-  → Usulan: adopsi **N = 50 dan 500 pengiriman** per skenario (atau sesuai angka
-  final [M2] setelah diverifikasi dari PDF). Kalimat skripsi: "jumlah pengulangan
-  pengiriman mengacu pada [Mishra & Guru, 2026] (50 dan 500 iterasi)."
-- **Alternatif/pendukung:** jumlah pesan uji besar dgn banyak iterasi juga dipakai
-  [M1] Thangavel 2014 — ambil angka pastinya dari PDF untuk justifikasi tambahan.
-- Tiap kondisi → ambil **mean + standar deviasi**.
-- **⚠️ VERIFIKASI DARI PDF [M2]/[M1]:**
-  - [ ] pastikan angka iterasi [M2] (50 & 500) dari isi paper, bukan hanya abstrak
-  - [ ] catat jumlah pesan/iterasi [M1] untuk pembanding
-  - [ ] konfirmasi ke dosen: pakai N dari [M2], [M1], atau kombinasi
+- **FINAL — MENGACU [R1] Kirilov & Chikurtev 2026: N = 30 iterasi per kombinasi**
+  (protokol × ukuran payload). Setup [R1] paling identik dgn kita (ESP32 + laptop
+  gateway), jadi angka 30 ini paling tepat & kredibel. 30 = batas minimal standar
+  statistik untuk mean/median/standar deviasi. → didukung [R2] (iterasi berulang).
+  Kalimat skripsi: "setiap kombinasi diuji 30 iterasi, mengacu pada [Kirilov & Chikurtev, 2026]."
+- **Total transaksi per protokol:** 3 payload (16/64/256 B) × 30 = **90 transaksi/protokol**
+  (ikut pola [R1]; [R1] memakai 180 karena 6 kombinasi — sesuaikan jumlah variasi kita).
+- Catatan: angka 50/500 dari [M2]/Mishra (NS-3, simulasi) TIDAK dipakai sebagai N utama
+  karena konteks berbeda; boleh disebut di pembahasan sebagai pembanding literatur.
+- Tiap kombinasi → hitung **mean, median, std dev, min, max** ([R1]).
+- **⚠️ KONFIRMASI DOSEN:** setujui N=30 + 3 variasi payload (16/64/256 B) dari [R1].
 
 ---
 
@@ -217,11 +247,52 @@ murni berasal dari karakteristik protokol.
 ---
 
 ## 6. Checklist kesiapan sebelum mengetik hasil
-- [ ] Metode latency final (RTT/NTP) + rujukan dikunci
-- [ ] N pengulangan & jumlah pesan dikunci (disetujui dosen)
-- [ ] INA219 terpasang seri (energy bisa diukur)
-- [ ] Script logging CSV siap (timestamp, protokol, parameter)
+- [ ] Metode latency = time-to-completion (RTT-style, tanpa NTP) sesuai [R1] — konfirmasi dosen
+- [ ] N = 30 iterasi per kombinasi + payload 16/64/256 B (mengacu [R1]) — disetujui dosen
+- [ ] Konstanta uji disiapkan: jarak 1.5 m LOS, Wi-Fi Ch.6, cold transaction, jeda 4000 ms
+- [ ] 3 varian payload JSON (~16/64/256 B) sudah dibuat di firmware
+- [ ] MQTT QoS 0 & CoAP CON diset di kode
+- [ ] INA219 terpasang seri (bila energy dimasukkan — rujuk [R5])
+- [ ] Script logging CSV siap (timestamp, protokol, payload, parameter)
 - [ ] Referensi dibaca penuh & disitasi sesuai panduan kampus (APA/IEEE)
-- [ ] **Review & cocokkan [R1]–[R6] (web) dengan [M1]–[M18] (Mendeley)** — buang duplikat,
-      pilih yang paling akurat & kredibel per metode
-- [ ] Skenario S1–S4 disetujui dosen
+- [ ] Skenario INTI (payload×30) + tambahan (opsional) disetujui dosen
+
+---
+
+## 7. Draft Teks Metodologi (siap pakai di BAB IV — sesuaikan & verifikasi)
+
+> Sumber: dirangkum dari [R1] Kirilov & Chikurtev (2026) dan [R4] Silva et al. (2021).
+> Verifikasi angka dari paper asli & sesuaikan dgn hasil konfirmasi dosen sebelum final.
+
+> **4.x Metode dan Prosedur Pengujian Performa Protokol**
+>
+> Prosedur pengujian komparasi performa protokol MQTT dan CoAP pada sistem Smart
+> Water Usage ini dirancang mengacu pada metodologi pengujian oleh Kirilov &
+> Chikurtev [R1] dan Silva et al. [R4]. Pengujian dilakukan dalam kondisi
+> laboratorium terkontrol menggunakan satu node transmisi ESP32, gateway laptop
+> (menjalankan broker Mosquitto untuk MQTT dan server aiocoap untuk CoAP), serta
+> router Wi-Fi 2.4 GHz pada jarak konstan 1,5 meter Line-of-Sight (LOS).
+>
+> Pengujian menerapkan metode Cold Transaction, di mana setiap iterasi pengiriman
+> diawali inisiasi koneksi baru dan diakhiri pemutusan koneksi [R1]. Untuk mencegah
+> residual buffer pada stack jaringan TCP/UDP ESP32, diterapkan jeda inter-trial
+> sebesar 4.000 ms antar iterasi [R1]. Pengujian dilakukan terhadap tiga variasi
+> ukuran payload telemetry, yaitu 16 byte, 64 byte, dan 256 byte [R1, R4]. Setiap
+> variasi direplikasi sebanyak 30 iterasi untuk memenuhi kecukupan sampel statistik
+> deskriptif (mean, median, standar deviasi) [R1, R2]. MQTT dikonfigurasi pada QoS 0
+> dan CoAP pada mode Confirmable (CON) [R1, R3].
+
+---
+
+## 8. STATUS KESESUAIAN DENGAN REFERENSI (transparansi)
+
+| Hal | Status | Keterangan |
+|-----|--------|------------|
+| N = 30 iterasi | ✅ dari ringkasan [R1] | perlu verifikasi di PDF [R1] & setujui dosen |
+| Payload 16/64/256 B | ✅ dari ringkasan [R1] | sesuaikan ke JSON kita |
+| Jeda 4000 ms, cold transaction | ✅ dari ringkasan [R1] | implementasi di firmware |
+| QoS 0 / CoAP CON | ✅ dari ringkasan [R1] | set di kode |
+| Jarak 1.5 m LOS, Wi-Fi Ch.6 | ✅ dari ringkasan [R1] | atur saat setup uji |
+| Metode latency (time-to-completion) | ✅ dari [R1]/[R4] | konfirmasi dosen |
+| Energy consumption | ⚠️ opsional | [R1] fokus latency; energy rujuk [R5]. Putuskan apakah energy masuk scope |
+| Angka pembanding hasil [R1] | ⏳ belum diekstrak | baca PDF untuk konteks diskusi (bukan ditiru) |
