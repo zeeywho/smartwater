@@ -191,11 +191,12 @@ Setelah rakit ulang bertahap dengan JUMPER BARU, semua sensor kembali terdeteksi
 - **Metode:** mengacu [R1] Kirilov & Chikurtev 2026 — cold transaction, 30 iterasi/kombinasi,
   jeda 4000 ms, payload 16/64/256 byte, MQTT QoS0 (+echo RTT), CoAP CON.
 - **Jaringan:** hotspot HP "zee" (2.4 GHz); laptop 172.20.10.3; ESP32 172.20.10.2.
-- **Hasil ringkas (mean latency, success rate):**
+- **Hasil ringkas (MEDIAN latency, success rate) — CoAP 16B sudah di-run ulang (benar 16B):**
   | Protokol | 16 B | 64 B | 256 B |
   |----------|------|------|-------|
-  | CoAP | 156.23 ms (100%) | 16.60 ms (100%) | 50.45 ms (96.67%) |
-  | MQTT | 59.21 ms (96.67%) | 76.72 ms (96.67%) | 30.21 ms (96.67%) |
+  | CoAP | 11.0 ms (100%) | 11.0 ms (100%) | 12.0 ms (96.67%) |
+  | MQTT | 32.0 ms (96.67%) | 19.0 ms (96.67%) | 26.0 ms (96.67%) |
+  (Median dipakai sbg nilai utama krn tahan outlier. Statistik lengkap: hasil-pengujian-kinerja.md)
 - **Data mentah lengkap:** `bab 4/hasil-pengujian-kinerja.md`.
 - **Isu & solusi (temuan teknis):**
   - Payload 256 B TIMEOUT di kedua protokol → buffer library kekecilan.
