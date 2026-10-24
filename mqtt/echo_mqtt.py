@@ -32,7 +32,11 @@ def on_message(client, userdata, msg):
 
 
 def main():
-    client = mqtt.Client(client_id="echo_laptop")
+    # Kompatibel paho-mqtt v1 & v2
+    try:
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id="echo_laptop")
+    except (AttributeError, TypeError):
+        client = mqtt.Client(client_id="echo_laptop")
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(BROKER, PORT, 60)

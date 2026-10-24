@@ -46,10 +46,12 @@ int curSeq = 0;
 
 char payload[300];
 
-// Bangun payload JSON ~PAYLOAD_SIZE byte, sertakan seq agar echo bisa dicocokkan
+// Bangun payload berukuran PERSIS PAYLOAD_SIZE byte (sertakan seq utk echo).
+// Basis {"s":N,"d":""} -> diisi 'x' pada field d sampai total = PAYLOAD_SIZE.
+// Catatan: PAYLOAD_SIZE kecil (mis.16) tetap muat karena basis ringkas.
 void buildPayload(int seq) {
-  char head[48];
-  int hlen = snprintf(head, sizeof(head), "{\"seq\":%d,\"pad\":\"", seq);
+  char head[32];
+  int hlen = snprintf(head, sizeof(head), "{\"s\":%d,\"d\":\"", seq); // mis. {"s":1,"d":"
   const char* tail = "\"}";
   int baseLen = hlen + strlen(tail);
   int padLen = PAYLOAD_SIZE - baseLen;
@@ -99,6 +101,8 @@ void setup() {
   client.setCallback(onMessage);
   client.setKeepAlive(60);
   client.setSocketTimeout(30);
+  client.setBufferSize(1024);   // PENTING: default PubSubClient 256 -> echo payload 256
+                                // tidak muat (payload+topic+header). Naikkan agar 256 B jalan.
 
   Serial.println("iterasi,latency_ms,status");
 
@@ -114,16 +118,18 @@ void setup() {
       continue;
     }
 
+    // beri waktu subscribe 'ack' aktif di broker sebelum publish
+    for (int w = 0; w < 50; w++) { client.loop(); delay(2); }  // ~100 ms
+
     buildPayload(it);
     ackReceived = false;
     unsigned long t0 = millis();
     client.publish(TOPIC_DATA, payload);   // QoS 0
 
-    // tunggu echo (ACK aplikasi) sampai timeout
+    // tunggu echo (ACK aplikasi) sampai timeout — loop sering agar echo tertangkap
     unsigned long tStart = millis();
     while (!ackReceived && (millis() - tStart < ACK_TIMEOUT_MS)) {
       client.loop();
-      delay(1);
     }
 
     if (ackReceived) {

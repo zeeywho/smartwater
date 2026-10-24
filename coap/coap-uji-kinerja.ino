@@ -36,15 +36,15 @@ volatile unsigned long tAck = 0;
 
 char payload[300];
 
-// Bangun payload JSON berukuran ~PAYLOAD_SIZE byte (diisi field pad agar pas)
+// Bangun payload berukuran PERSIS PAYLOAD_SIZE byte.
+// Basis JSON minimal {"d":"..."} lalu diisi 'x' agar total = PAYLOAD_SIZE.
+// Basis = {"d":""} = 8 byte, jadi payload 16/64/256 bisa tercapai.
 void buildPayload() {
-  // basis JSON; sisanya diisi karakter 'x' pada field "pad" supaya total ~ PAYLOAD_SIZE
-  // contoh basis ~ {"id":1,"v":0,"pad":""}
-  const char* base = "{\"id\":1,\"v\":0,\"pad\":\"";
-  const char* tail = "\"}";
-  int baseLen = strlen(base) + strlen(tail);
+  const char* base = "{\"d\":\"";   // 6 byte
+  const char* tail = "\"}";          // 2 byte  -> total basis 8 byte
+  int baseLen = strlen(base) + strlen(tail);  // 8
   int padLen = PAYLOAD_SIZE - baseLen;
-  if (padLen < 0) padLen = 0;
+  if (padLen < 0) padLen = 0;  // jika PAYLOAD_SIZE < 8, minimal jadi basis saja
   if (padLen > (int)sizeof(payload) - baseLen - 1) padLen = sizeof(payload) - baseLen - 1;
   int i = 0;
   i += snprintf(payload + i, sizeof(payload) - i, "%s", base);
@@ -90,11 +90,10 @@ void setup() {
     unsigned long t0 = millis();
     coap.put(coap_server, 5683, "sensor", payload);
 
-    // tunggu ACK (CON) sampai timeout
+    // tunggu ACK (CON) sampai timeout — panggil coap.loop() seketat mungkin
     unsigned long tStart = millis();
     while (!ackReceived && (millis() - tStart < ACK_TIMEOUT_MS)) {
-      coap.loop();
-      delay(1);
+      coap.loop();   // tanpa delay agar response cepat ditangkap
     }
 
     if (ackReceived) {

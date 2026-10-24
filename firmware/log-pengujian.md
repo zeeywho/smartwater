@@ -184,3 +184,32 @@ Setelah rakit ulang bertahap dengan JUMPER BARU, semua sensor kembali terdeteksi
 
 ### 🎉 TAHAP HARDWARE SELESAI — semua sensor terbukti bekerja (individual + gabungan).
 ### Catatan sebelum tahap data serius: pertimbangkan permanenkan koneksi (solder/protoboard) agar stabil berjam-jam saat pengujian kinerja MQTT vs CoAP.
+
+---
+
+## STEP 11 — Pengujian Kinerja MQTT vs CoAP ✅ SELESAI (6 kombinasi)
+- **Metode:** mengacu [R1] Kirilov & Chikurtev 2026 — cold transaction, 30 iterasi/kombinasi,
+  jeda 4000 ms, payload 16/64/256 byte, MQTT QoS0 (+echo RTT), CoAP CON.
+- **Jaringan:** hotspot HP "zee" (2.4 GHz); laptop 172.20.10.3; ESP32 172.20.10.2.
+- **Hasil ringkas (mean latency, success rate):**
+  | Protokol | 16 B | 64 B | 256 B |
+  |----------|------|------|-------|
+  | CoAP | 156.23 ms (100%) | 16.60 ms (100%) | 50.45 ms (96.67%) |
+  | MQTT | 59.21 ms (96.67%) | 76.72 ms (96.67%) | 30.21 ms (96.67%) |
+- **Data mentah lengkap:** `bab 4/hasil-pengujian-kinerja.md`.
+- **Isu & solusi (temuan teknis):**
+  - Payload 256 B TIMEOUT di kedua protokol → buffer library kekecilan.
+    CoAP: naikkan `BUF_MAX_SIZE` coap-simple → 512. MQTT: `client.setBufferSize(1024)`.
+  - Hotspot HP kurang stabil → sesekali TIMEOUT/CONNECT_FAIL (gangguan jaringan,
+    bukan karakteristik protokol); perlu reset bersih (cabut USB, restart hotspot,
+    reconnect Wi-Fi, restart broker+echo).
+  - MQTT latency diukur RTT via echo (laptop echo smartwater/data -> smartwater/ack)
+    agar setara CoAP CON (ada balasan).
+- **Catatan metodologi (perlu konfirmasi dosen):**
+  - CoAP 16 B mean ketarik outlier cold-start → pertimbangkan ulang agar sebanding.
+  - Perlakuan TIMEOUT/CONNECT_FAIL harus SAMA untuk kedua protokol (fair).
+  - Gunakan MEDIAN selain mean (tahan outlier).
+- **Status:** ✅ SELESAI (180 transaksi; tinggal hitung median/std & isi tabel 4.7).
+
+### 🏆 MILESTONE: Pengujian kinerja MQTT vs CoAP (inti skripsi) TUNTAS.
+### Berikutnya: hitung statistik deskriptif → isi BAB IV 4.7; lalu pengujian deteksi kebocoran (butuh air).
