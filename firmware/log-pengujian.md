@@ -214,3 +214,35 @@ Setelah rakit ulang bertahap dengan JUMPER BARU, semua sensor kembali terdeteksi
 
 ### 🏆 MILESTONE: Pengujian kinerja MQTT vs CoAP (inti skripsi) TUNTAS.
 ### Berikutnya: hitung statistik deskriptif → isi BAB IV 4.7; lalu pengujian deteksi kebocoran (butuh air).
+
+---
+
+## STEP 12 — Pengujian THROUGHPUT ✅ SELESAI
+- Metode: kirim 100 pesan beruntun (tanpa jeda), hitung bps & msg/s. Rujuk [M2] Mishra
+  (definisi bps) + [M-arXiv] Krikorian (pengiriman kontinu). N=100 (titik tengah 50–500
+  Mishra, realistis hardware). Ulang 3×/kombinasi.
+- Hasil rata-rata (bps): CoAP ~3–4× lebih tinggi dari MQTT di semua payload.
+  | Payload | MQTT bps | CoAP bps |
+  |---------|----------|----------|
+  | 16 B | 3.812,94 | 12.283,21 |
+  | 64 B | 14.797,70 | 60.686,54 |
+  | 256 B | 52.932,25 | 214.183,37 |
+- Isu: buffer coap-simple harus 512 utk payload 256 (default 128 → TIMEOUT); run terdampak
+  hotspot dibuang & diulang bersih. Detail: `bab 4/hasil-pengujian-throughput.md`.
+- Status: ✅ SELESAI.
+
+## RELIABILITY ✅ SELESAI (rangkum PDR)
+- Reliability = PDR/success rate (rujuk [M2] Mishra, [R4] Silva). Dirangkum dari latency
+  + throughput (tanpa uji baru). MQTT 96,67–100%; CoAP 98,89–100%.
+  Detail: `bab 4/hasil-pengujian-reliability.md`.
+
+## STEP 13 — Uji kinerja PAYLOAD JSON SENSOR ASLI — KODE SIAP (run di AKHIR)
+- Pelengkap operasional nyata: payload = JSON sensor sistem (~75 B), bukan sintetis.
+  Metode SAMA (hanya payload beda) agar sebanding + validasi korelasi dgn tren sintetis.
+- Kode siap: `coap/coap-uji-latency-json.ino`, `coap/coap-uji-throughput-json.ino`,
+  `mqtt/mqtt-uji-latency-json.ino`, `mqtt/mqtt-uji-throughput-json.ino`. Lembar 3C.
+- DIKERJAKAN SETELAH deteksi kebocoran end-to-end (fokus fungsi utama dulu).
+
+### 🏆 Uji kinerja protokol: LATENCY, PACKET LOSS, THROUGHPUT, RELIABILITY = TUNTAS.
+### Berikutnya (prioritas): DETEKSI KEBOCORAN (fungsi utama, butuh air). Lalu energy,
+### jembatan CoAP dashboard, dan uji payload JSON asli (penutup).

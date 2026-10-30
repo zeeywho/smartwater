@@ -112,6 +112,19 @@ INA219 seri) + deteksi kebocoran (butuh air).
 | Rata-rata per protokol/payload | ⏳ |
 > Rujukan metode energy: [R5]. Konfirmasi dosen apakah energy masuk scope final.
 
+### 4f. Uji Kinerja PAYLOAD JSON SENSOR ASLI (STEP 13) — ⏳ KODE SIAP, run di AKHIR
+> Pelengkap operasional nyata: payload = JSON sensor sistem (~75 B), bukan sintetis.
+> Tujuan: kondisi nyata + validasi KORELASI dgn tren payload sintetis (penguat hasil).
+> Dikerjakan SETELAH deteksi kebocoran end-to-end (urutan sesuai keputusan).
+| Item | Status |
+|------|--------|
+| Kode latency JSON (MQTT+CoAP) | ✅ siap: `*-uji-latency-json.ino` |
+| Kode throughput JSON (MQTT+CoAP) | ✅ siap: `*-uji-throughput-json.ino` |
+| Run latency JSON (30 iterasi) | ⏳ di akhir |
+| Run throughput JSON (100×3) | ⏳ di akhir |
+| Lembar catat | ✅ Lembar 3C (`lembar-pengujian.md`) |
+| Metode = SAMA dgn sintetis (hanya payload beda) | ✅ agar sebanding |
+
 ---
 
 ## ⏳ BAGIAN 5 — PENGUJIAN DETEKSI KEBOCORAN (BUTUH AIR)
@@ -157,18 +170,22 @@ INA219 seri) + deteksi kebocoran (butuh air).
 
 ## 🗺️ ROADMAP SISA (urutan disarankan menuju TUNTAS)
 
-> Fokus hari ini: selesaikan yang BISA tanpa nunggu, lalu yang butuh alat/air.
+> Urutan: selesaikan uji inti dulu, uji payload JSON asli (STEP 13) dikerjakan DI AKHIR
+> setelah deteksi kebocoran (sesuai keputusan — biar fokus ke fungsi utama dulu).
 
-1. [ ] **Throughput** — hitung dari data latency+payload yang SUDAH ADA (tanpa alat).
-       → langsung bisa isi 4.6.3.2 & 4.7.2.
-2. [ ] **Energy** — pasang INA219 seri → uji ulang MQTT vs CoAP singkat → isi 4.6.3.4 & 4.7.4.
+1. [x] **Throughput** — SELESAI (uji khusus N=100, 6 kombinasi). → 4.6.3.2 & 4.7.2.
+2. [x] **Reliability** — SELESAI (rangkum PDR dari latency+throughput). → 4.6.3.5 & 4.7.5.
+3. [ ] **Deteksi kebocoran (FUNGSI UTAMA)** — alirkan air, kalibrasi normal, simulasi bocor →
+       isi 4.3.5 lengkap, 4.5.3, 4.6.2, F11. ← PRIORITAS BERIKUTNYA
+4. [ ] **Energy** — pasang INA219 seri → uji MQTT vs CoAP → 4.6.3.4 & 4.7.4.
        (atau konfirmasi dosen apakah di-drop dari scope)
-3. [ ] **Deteksi kebocoran** — alirkan air, kalibrasi normal, simulasi bocor →
-       isi 4.3.5 lengkap, 4.5.3, 4.6.2, F11.
-4. [ ] **Jembatan CoAP ke dashboard** — node coap-in / bridge → isi 4.5.4, F10 (CoAP).
-5. [ ] **(Opsional) Uji reliability durasi panjang** — bila dosen minta.
-6. [ ] **Finalisasi BAB IV** — lengkapi 4.7, 4.8, 4.9; konfirmasi statistik; sitasi rujukan.
-7. [ ] **Konfirmasi dosen:** metode throughput, energy in/out scope, N=30 & payload, success-rate.
+5. [ ] **Jembatan CoAP ke dashboard** — node coap-in / bridge → 4.5.4, F10 (CoAP).
+6. [ ] **Uji kinerja PAYLOAD JSON ASLI (STEP 13)** — kode SIAP; RUN DI AKHIR (setelah
+       deteksi kebocoran) → pelengkap operasional nyata + validasi korelasi.
+7. [ ] **(Opsional) Uji reliability durasi panjang** — bila dosen minta.
+8. [ ] **Finalisasi BAB IV** — lengkapi 4.7, 4.8, 4.9; konfirmasi statistik; sitasi rujukan.
+9. [ ] **Konfirmasi dosen:** energy in/out scope; payload JSON asli (tambah skenario);
+       metode success-rate.
 
 ---
 
@@ -177,7 +194,9 @@ INA219 seri) + deteksi kebocoran (butuh air).
 |-------|------|
 | Lembar catat saat uji | `bab 4/lembar-pengujian.md` |
 | Metode + rujukan jurnal | `bab 4/rancangan-pengujian-berujukan.md` |
-| Data & statistik kinerja | `bab 4/hasil-pengujian-kinerja.md` |
+| Data latency/loss | `bab 4/hasil-pengujian-kinerja.md` |
+| Data throughput | `bab 4/hasil-pengujian-throughput.md` |
+| Data reliability (PDR) | `bab 4/hasil-pengujian-reliability.md` |
 | Draft narasi 4.6–4.7 | `bab 4/4.6-4.7-draft-kinerja.md` |
 | Outline 4.1.3–4.5 | `bab 4/4.1.3-4.5-outline.md` |
 | Tutorial setup uji | `firmware/setup-pengujian-kinerja.md` |
@@ -185,4 +204,5 @@ INA219 seri) + deteksi kebocoran (butuh air).
 
 ---
 
-_Terakhir diperbarui: setelah pengujian kinerja latency+success rate (6 kombinasi) selesai._
+_Terakhir diperbarui: latency+packet loss+throughput+reliability SELESAI. Kode uji payload
+JSON asli (STEP 13) SIAP (run di akhir). Berikutnya: deteksi kebocoran (fungsi utama)._
