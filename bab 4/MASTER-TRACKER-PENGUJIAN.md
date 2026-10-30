@@ -21,16 +21,17 @@ Hardware & Sensor  ██████████ 100%  ✅ (STEP 1–7)
 Komunikasi MQTT    ██████████ 100%  ✅ (STEP 8)
 Komunikasi CoAP    ██████████ 100%  ✅ (STEP 9)
 Dashboard (MQTT)   ███████░░░  70%  🚧 (STEP 10; jembatan CoAP belum)
-Uji Kinerja        ████████░░  80%  🚧 (latency+loss ✅; throughput/energy ⏳)
+Uji Kinerja        █████████░  90%  🚧 (latency+loss+throughput+reliability ✅; energy ⏳)
 Deteksi Kebocoran  ░░░░░░░░░░   0%  ⏳ (butuh air)
 Analisis & BAB IV  ██████░░░░  60%  🚧 (draft ada; lengkapi stlh uji sisa)
 ```
 
-**POSISI TERAKHIR:** Pengujian kinerja LATENCY + SUCCESS RATE (6 kombinasi, 180 transaksi)
-sudah SELESAI & teranalisis. Draft BAB IV 4.1–4.7 (sebagian) sudah dibuat.
+**POSISI TERAKHIR:** Uji kinerja protokol — **LATENCY, PACKET LOSS, THROUGHPUT, RELIABILITY
+sudah SELESAI** (data asli, 3 dari kinerja + reliability tuntas). Tinggal ENERGY (butuh
+INA219 seri) + deteksi kebocoran (butuh air).
 
-**SISA MENUJU TUNTAS:** (1) Throughput, (2) Energy (pasang INA219 seri),
-(3) Deteksi kebocoran (pakai air), (4) Jembatan CoAP ke dashboard, (5) finalisasi BAB IV.
+**SISA MENUJU TUNTAS:** (1) Energy (pasang INA219 seri) — bisa di-drop bila dosen setuju,
+(2) Deteksi kebocoran (pakai air), (3) Jembatan CoAP ke dashboard, (4) finalisasi BAB IV.
 
 ---
 
@@ -88,17 +89,20 @@ sudah SELESAI & teranalisis. Draft BAB IV 4.1–4.7 (sebagian) sudah dibuat.
 | 256 B | 96.67% | 96.67% |
 > Diambil dari run yang sama (success rate). ✅
 
-### 4c. Reliability — 🚧 SEBAGIAN
+### 4c. Reliability — ✅ SELESAI (dari PDR)
 | Item | Status |
 |------|--------|
-| Dari success rate 6 kombinasi | ✅ (indikator awal) |
+| PDR/success rate 6 kombinasi (latency + throughput) | ✅ dirangkum (`hasil-pengujian-reliability.md`) |
+| Reliability: MQTT 96.67–100%, CoAP 98.89–100% | ✅ |
 | Uji durasi panjang (mis. 30 menit kontinu) | ⏳ OPSIONAL (bila dosen minta) |
 
-### 4d. Throughput — ⏳ BELUM
-| Item | Status |
-|------|--------|
-| Hitung dari payload × pesan sukses / durasi | ⏳ bisa dihitung dari data latency+payload |
-| ATAU uji khusus (kirim rapat, ukur msg/s) | ⏳ tentukan metode + konfirmasi dosen |
+### 4d. Throughput — ✅ SELESAI (uji khusus, data baru)
+| Payload | MQTT (bps) | CoAP (bps) |
+|---------|-----------|-----------|
+| 16 B | 3.812,94 | 12.283,21 |
+| 64 B | 14.797,70 | 60.686,54 |
+| 256 B | 52.932,25 | 214.183,37 |
+> N=100 beruntun × 3 ulangan. CoAP ~3–4× lebih tinggi. Detail: `hasil-pengujian-throughput.md`
 
 ### 4e. Energy Consumption — ⏳ BELUM (BLOK)
 | Item | Status |
