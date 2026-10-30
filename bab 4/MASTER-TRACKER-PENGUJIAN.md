@@ -127,15 +127,22 @@ INA219 seri) + deteksi kebocoran (butuh air).
 
 ---
 
-## ⏳ BAGIAN 5 — PENGUJIAN DETEKSI KEBOCORAN (BUTUH AIR)
+## 🚧 BAGIAN 5 — PENGUJIAN DETEKSI KEBOCORAN (BUTUH AIR) — IN PROGRESS
+> Kode `firmware/deteksi-kebocoran.ino` SIAP & upload OK, MQTT terhubung, dashboard jalan.
+> Prototipe terverifikasi (Flow1 dekat galon=inlet, T-junction cabang=bocor, Flow2=outlet).
+> ⚠️ ISU: Flow1/Flow2 = 0 (air belum dialirkan deras saat checkpoint). Panduan:
+> `firmware/setup-deteksi-kebocoran.md`.
 | Item | Status |
 |------|--------|
+| Upload kode + MQTT connect + dashboard | ✅ |
+| pressure_adc kebaca (fluktuasi normal) | ✅ |
+| Flow1/Flow2 naik saat air mengalir | ⏳ (cek saat air deras; kalau 0 → cek wiring) |
 | Kalibrasi kondisi NORMAL (Flow1≈Flow2) → tentukan threshold | ⏳ |
-| Skenario NORMAL (air lewat kedua sensor) | ⏳ |
-| Skenario BOCOR (buka T-junction → Flow1>Flow2 + tekanan turun) | ⏳ |
-| Validasi sistem tampilkan status NORMAL/BOCOR benar | ⏳ |
+| Skenario NORMAL (5×) | ⏳ |
+| Skenario BOCOR (buka keran T-junction, 5×) | ⏳ |
+| Validasi status NORMAL/BOCOR di dashboard + screenshot | ⏳ |
 | Hitung akurasi deteksi | ⏳ |
-> Lembar catat: `lembar-pengujian.md` (Lembar 2). Rujukan: [R-leak] YF-S201, flow in/out.
+> Lembar catat: `lembar-pengujian.md` (Lembar 2). Rujukan: [M9] YF-S201, [M10] flow in/out.
 
 ---
 

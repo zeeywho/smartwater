@@ -106,14 +106,15 @@ void setup() {
   ackCount = 0;
   unsigned long tMulai = millis();
 
-  // publish beruntun tanpa jeda
+  // publish beruntun — beri sedikit nafas + loop agar echo tertangkap
   for (int it = 1; it <= N_PESAN; it++) {
     buildPayload(it);
     client.publish(TOPIC_DATA, payload);   // QoS 0
-    client.loop();                         // proses echo yang masuk
+    // panggil loop beberapa kali agar echo yang masuk diproses
+    for (int k = 0; k < 3; k++) { client.loop(); delay(1); }
   }
 
-  // tunggu sisa echo tiba
+  // tunggu sisa echo tiba (loop ketat)
   unsigned long tWait = millis();
   while (millis() - tWait < WAIT_ACK_MS) { client.loop(); }
 

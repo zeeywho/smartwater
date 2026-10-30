@@ -246,3 +246,25 @@ Setelah rakit ulang bertahap dengan JUMPER BARU, semua sensor kembali terdeteksi
 ### 🏆 Uji kinerja protokol: LATENCY, PACKET LOSS, THROUGHPUT, RELIABILITY = TUNTAS.
 ### Berikutnya (prioritas): DETEKSI KEBOCORAN (fungsi utama, butuh air). Lalu energy,
 ### jembatan CoAP dashboard, dan uji payload JSON asli (penutup).
+
+---
+
+## STEP 14 — DETEKSI KEBOCORAN (fungsi utama) — 🚧 IN PROGRESS (checkpoint)
+- Kode `firmware/deteksi-kebocoran.ino` BERHASIL upload & MQTT terhubung ✅.
+- Format CSV jalan: `waktu,flow1,flow2,selisih,pressure_adc,status`.
+- **pressure_adc KEBACA & berfluktuasi** (0→4095, naik-turun) — normal (ADC ngambang
+  saat tekanan belum stabil / air belum mengalir deras). ✅
+- ⚠️ **ISU BELUM SELESAI: Flow1 & Flow2 = 0.00 TERUS.** Saat checkpoint ini, AIR BELUM
+  dialirkan deras (user baru verifikasi, belum kalibrasi). LANGKAH BERIKUTNYA: alirkan
+  air NORMAL (keran T-junction TUTUP) → cek flow1/flow2 NAIK. Kalau tetap 0 saat air
+  deras → cek wiring flow (GPIO25/27) / keran utama / turbin sensor muter.
+- Prototipe terverifikasi: Galon(kanan) → Flow1(inlet,dekat galon) → T-junction+keran
+  (simulasi bocor, cabang ke ember) → Flow2(outlet,jauh) → keluar. Konsep BENAR.
+- Dashboard Node-RED jalan (MQTT): flow `mqtt in → json → function → gauge/chart/text`.
+  Node text Status → pakai `msg.payload.status` (status dihitung di ESP32).
+- BELUM dilakukan: kalibrasi threshold, uji NORMAL (5×), uji BOCOR (5×), hitung akurasi,
+  screenshot dashboard NORMAL/BOCOR.
+- Panduan lengkap: `firmware/setup-deteksi-kebocoran.md`. Lembar catat: Lembar 2.
+
+### CHECKPOINT: deteksi kebocoran baru tahap upload+verifikasi. Lanjut = KALIBRASI
+### (alirkan air normal, cek flow naik, set threshold) → uji NORMAL & BOCOR.
