@@ -194,3 +194,29 @@
 - [ ] CoAP server jalan + firewall UDP 5683 OK
 - [ ] Payload MQTT & CoAP IDENTIK (ukuran & isi sama)
 - [ ] Dashboard Node-RED jalan (opsional saat uji kinerja)
+
+---
+
+## LEMBAR 3C — Uji Kinerja dengan PAYLOAD JSON SENSOR ASLI (pelengkap)
+
+> Tujuan: kondisi OPERASIONAL NYATA + validasi korelasi dengan tren payload sintetis.
+> Payload = format JSON sensor sistem (~75 byte):
+> `{"flow1":0.00,"flow2":0.00,"pressure_adc":461,"voltage":0.00,"current":0.0}`
+> Metode SAMA dgn uji sintetis (agar sebanding). TIDAK perlu air (nilai statis utk uji jaringan).
+> Kode: `*-uji-latency-json.ino` & `*-uji-throughput-json.ino`.
+
+### Latency (30 iterasi) — ringkas statistik
+| Protokol | Berhasil | Mean (ms) | Median (ms) | Std | Min | Max | Success % |
+|----------|----------|-----------|-------------|-----|-----|-----|-----------|
+| MQTT JSON | ___/30 | ___ | ___ | ___ | ___ | ___ | ___ |
+| CoAP JSON | ___/30 | ___ | ___ | ___ | ___ | ___ | ___ |
+
+### Throughput (100 pesan × 3 ulangan)
+| Protokol | Ulang | Sukses | Waktu(s) | msg/s | bps | Success% |
+|----------|-------|--------|----------|-------|-----|----------|
+| MQTT JSON | 1–3 | ___ | ___ | ___ | ___ | ___ |
+| CoAP JSON | 1–3 | ___ | ___ | ___ | ___ | ___ |
+
+### Analisis korelasi (bahan pembahasan)
+- Ukuran JSON asli (~75 B) berada di antara 64 B & 256 B → cek apakah hasilnya konsisten
+  dengan tren payload sintetis (validasi silang). Catat temuan: ________________________
