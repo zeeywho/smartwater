@@ -77,6 +77,7 @@
 | [M6] | Malhotra, J. & Muddassir, M. (2025). "Design and Simulation of a Basic IoT Network Using MQTT and CoAP Protocols." IEEE IC2SDT 2025. doi:10.1109/IC2SDT68218.2025.11383693 | ⭐ Pakai **CoAP-MQTT bridge** + ukur latency/packet loss/jitter/throughput + simulasi variabilitas jaringan. **Mirip arsitektur jembatan kita.** → rujukan JEMBATAN & multi-parameter. |
 | [M7] | Naik, N. (2017). "Choice of effective messaging protocols for IoT systems: MQTT, CoAP, AMQP and HTTP." IEEE ISSE 2017. doi:10.1109/SysEng.2017.8088251 | Perbandingan karakteristik protokol (QoS, dll). → rujukan DASAR TEORI pemilihan parameter. |
 | [M8] | Jara Ochoa, H. J. et al. (2023). "Comparative Analysis of Power Consumption between MQTT and HTTP..." Sensors 23(10):4896 (MDPI). doi:10.3390/S23104896 | Metode ukur **power consumption** MQTT (QoS 0/1) via NodeMCU, uji jangka panjang. → rujukan METODE ENERGY & QoS. |
+| [M-arXiv] | Krikorian, S., Skarnes, B., Vadlamudi, S. V. (2023). "Implementing A Middleware API for Facilitating Heterogeneous IoT Device Communication Protocols and Data Retrieval." arXiv:2312.10294. | ⭐ Setup paling mirip kita: **Mosquitto+paho (MQTT) & aiocoap (CoAP)** + **middleware jembatan 2 protokol**. Ukur travel time (latency) & throughput (distribusi pesan diterima/periode), interval 1 detik, MQTT QoS0. → rujukan THROUGHPUT (pengiriman kontinu) & JEMBATAN CoAP-MQTT dashboard. (Catatan: preprint arXiv — dampingi referensi peer-review; konfirmasi dosen.) |
 
 **Kelompok B — Metode deteksi kebocoran (flow & pressure):**
 | Kode | Referensi | Relevansi |
@@ -140,10 +141,16 @@ murni berasal dari karakteristik protokol.
 - **Hasil:** `[ISI SETELAH PENGUJIAN]`
 
 ### 2.2 Throughput
-- **Definisi:** jumlah pesan/byte berhasil diterima per satuan waktu (msg/s atau kbps).
-- **Metode:** hitung jumlah pesan diterima di gateway dibagi durasi (script Node-RED/Python).
-- **Rujukan (web):** [R2], [R6]. **Rujukan (Mendeley):** [M2] (throughput multi-metrik),
-  [M6] (throughput + jembatan). → cocokkan saat final.
+- **Definisi:** laju data sukses per satuan waktu (bps dan/atau msg/s).
+- **METODE MENGACU [M2] Mishra 2026 + [M-arXiv] Krikorian 2023:** kirim N=100 pesan
+  **beruntun (tanpa jeda)**, catat jumlah sukses & total waktu, lalu:
+  `bps = (sukses × payload_byte × 8)/waktu` ; `msg/s = sukses/waktu`. Ulang 3× → rata-rata.
+  Uji TERPISAH dari latency (data baru). Lihat "Jumlah sampel untuk UJI THROUGHPUT" di §3.
+- **Rujukan:** [M2] Mishra (definisi bps + angka pembanding 50/500 iterasi, NS-3),
+  [M-arXiv] Krikorian (pendekatan pengiriman kontinu, setup aiocoap+Mosquitto mirip kita),
+  [R2] (message/second — figure/abstrak). → CoAP throughput cenderung lebih tinggi (teori).
+- **⚠️ CATATAN:** Mishra pakai simulasi (payload 1024 B, 50/500 iter); kita hardware
+  (payload 16/64/256 B, 100 pesan). Definisi bps diadopsi; angka disesuaikan ke hardware.
 - **Hasil:** `[ISI SETELAH PENGUJIAN]`
 
 ### 2.3 Packet Loss (Packet Loss Rate / Packet Success Rate)
@@ -210,6 +217,47 @@ Kondisi konstan: jarak 1.5 m LOS, Wi-Fi 2.4 GHz Ch.6, cold transaction, jeda 400
   karena konteks berbeda; boleh disebut di pembahasan sebagai pembanding literatur.
 - Tiap kombinasi → hitung **mean, median, std dev, min, max** ([R1]).
 - **⚠️ KONFIRMASI DOSEN:** setujui N=30 + 3 variasi payload (16/64/256 B) dari [R1].
+
+### Jumlah sampel untuk UJI THROUGHPUT (BERBEDA dari latency — berdasar referensi)
+> Dosen: angka sampel harus berdasar referensi, bukan asal. Berikut asal-usulnya.
+
+**Metode throughput ≠ metode latency.** Latency pakai cold transaction + jeda 4000 ms
+(1 transaksi/±4 detik). Throughput = **laju data sukses per detik (bps)**, jadi harus
+**kirim pesan beruntun (tanpa jeda)** lalu hitung bps. Karena itu butuh uji TERPISAH
+(data baru), bukan diturunkan dari data latency.
+
+**Definisi throughput (rumus) — mengacu [M2] Mishra & Guru 2026 (IJRASET):**
+> Mishra mendefinisikan *System Throughput (bps)* = "the effective data rate successfully
+> transmitted over the channel", dengan rumus berbasis jumlah pesan sukses, ukuran payload,
+> dan waktu. Hasil Mishra (NS-3, @500 iterasi): CoAP 625.017 bps > MQTT 139.577 bps.
+
+Rumus yang dipakai:
+```
+Throughput (bps)   = (pesan_sukses × payload_byte × 8) / total_waktu_detik
+Throughput (msg/s) = pesan_sukses / total_waktu_detik
+```
+
+**JUMLAH PESAN per kombinasi: N = 100 pesan** — ASAL-USUL ANGKA (3 dasar):
+1. **Mishra & Guru 2026 [M2]** memakai **50 (nominal) & 500 (stress) iterasi** pada
+   simulasi NS-3. Karena penelitian kita memakai **hardware nyata (ESP32)** — BUKAN
+   simulasi — angka 500 kurang praktis (durasi lama + hotspot HP tidak stabil untuk
+   burst besar). Dipilih **100** sebagai titik tengah 50–500 yang realistis di hardware.
+2. **arXiv Krikorian dkk. 2023** (setup aiocoap+Mosquitto, mirip kita) mengukur throughput
+   dari **aliran pesan kontinu** (interval tetap, hitung pesan diterima per periode) —
+   mendukung pendekatan "kirim beruntun lalu hitung laju".
+3. **Prinsip pengukuran laju**: throughput perlu cukup banyak pesan beruntun agar nilai
+   bps **stabil/representatif** (tidak terdistorsi 1–2 pesan). 100 pesan memberi durasi
+   uji yang cukup (beberapa detik) tanpa membebani hotspot berlebihan.
+
+→ Kalimat skripsi (contoh): "Pengukuran throughput menggunakan 100 pesan beruntun per
+kombinasi. Jumlah ini dipilih sebagai titik tengah yang realistis untuk lingkungan
+hardware, mengacu pada rentang beban iterasi (50–500) yang digunakan Mishra & Guru (2026)
+pada simulasi NS-3, serta pendekatan pengiriman kontinu pada Krikorian dkk. (2023)."
+
+- **Pengulangan:** tiap kombinasi diulang **3×** → ambil rata-rata (konsistensi).
+- **Payload:** tetap **16/64/256 B** (konsisten dengan uji latency & [R1]).
+- **⚠️ KONFIRMASI DOSEN:** setujui N=100 pesan (atau sesuaikan: 50/500 ala Mishra bila
+  diminta — tapi 500 di hardware+hotspot berisiko lama/tidak stabil).
 
 ---
 

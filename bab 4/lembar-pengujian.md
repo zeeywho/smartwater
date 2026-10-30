@@ -121,6 +121,35 @@
 
 ---
 
+## LEMBAR 3B — Pengujian THROUGHPUT (uji terpisah, data baru)
+
+> Metode: kirim 100 pesan BERUNTUN (tanpa jeda), hitung bps & msg/s. Rujuk [M2] Mishra
+> (definisi bps) + [M-arXiv] Krikorian (pengiriman kontinu). N=100 = titik tengah 50–500
+> (Mishra) yang realistis untuk hardware. Ulang 3× per kombinasi → rata-rata.
+> TIDAK perlu air. CoAP: aiocoap server. MQTT: Mosquitto + echo_mqtt.py.
+
+**Isi per kombinasi (3 pengulangan):**
+
+| Kombinasi | Ulang | Sukses/100 | Waktu (s) | msg/s | bps | Success % |
+|-----------|-------|-----------|-----------|-------|-----|-----------|
+| CoAP 16B | 1 | ____ | ____ | ____ | ____ | ____ |
+| CoAP 16B | 2 | ____ | ____ | ____ | ____ | ____ |
+| CoAP 16B | 3 | ____ | ____ | ____ | ____ | ____ |
+| CoAP 64B | 1–3 | ____ | ____ | ____ | ____ | ____ |
+| CoAP 256B | 1–3 | ____ | ____ | ____ | ____ | ____ |
+| MQTT 16B | 1–3 | ____ | ____ | ____ | ____ | ____ |
+| MQTT 64B | 1–3 | ____ | ____ | ____ | ____ | ____ |
+| MQTT 256B | 1–3 | ____ | ____ | ____ | ____ | ____ |
+
+**Rata-rata throughput (dari 3 ulangan) → bahan BAB IV 4.6.3.2 & 4.7.2:**
+| Payload | MQTT (bps) | CoAP (bps) | Lebih tinggi |
+|---------|-----------|-----------|--------------|
+| 16 B | ____ | ____ | ____ |
+| 64 B | ____ | ____ | ____ |
+| 256 B | ____ | ____ | ____ |
+
+---
+
 ## LEMBAR 4 — Tabel Ringkas Hasil (untuk BAB IV 4.7)
 
 > Salin nilai MEAN dari Lembar 3 ke sini (per skenario). Ini langsung jadi bahan tabel skripsi.

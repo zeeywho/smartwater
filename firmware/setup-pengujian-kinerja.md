@@ -168,3 +168,70 @@ iterasi,latency_ms,status
 | CoAP "Method not allowed" | pastikan server punya `render_put` |
 | latency 0 / aneh | cek urutan t0/t1; pastikan callback ACK jalan |
 | nilai loncat / nan | INA219 seri longgar (tak kritis utk uji kirim; sudah ada guard nan/inf) |
+
+---
+
+# STEP 12 — UJI THROUGHPUT (tambahan)
+
+## G. Kondisi hardware tiap mau uji (PENTING — biar tidak uji ulang)
+
+### Uji KINERJA (latency & throughput) — TIDAK perlu air
+| Item | Perlu? | Catatan |
+|------|--------|---------|
+| Air mengalir | ❌ TIDAK | payload sintetis (xxxx), bukan data sensor |
+| Buka keran / puteran | ❌ TIDAK | tidak relevan untuk uji jaringan |
+| ESP32 + kabel USB | ✅ YA | sumber daya ESP32 |
+| Wi-Fi hotspot "zee" (2.4GHz) | ✅ YA | laptop & ESP32 di hotspot yang sama |
+| Posisi ESP32 ~1.5 m dari HP | ✅ YA | konsisten tiap uji (kondisi terkontrol) |
+| Broker/server di laptop | ✅ YA | MQTT: Mosquitto+echo ; CoAP: aiocoap |
+| Sensor (flow/pressure/INA219) | — | boleh terpasang/tidak; tidak dipakai uji ini |
+
+> Ringkas: uji kinerja = murni jaringan. Nyalakan ESP32, pastikan Wi-Fi + broker/server
+> jalan, jarak konsisten. Tidak usah alirkan air / buka keran.
+
+### Uji DETEKSI KEBOCORAN (NANTI, beda pengujian) — PERLU air
+| Item | Perlu? |
+|------|--------|
+| Air mengalir lewat pipa | ✅ YA |
+| Puteran/keran di T-junction (simulasi bocor) | ✅ YA (dibuka untuk kondisi BOCOR) |
+| Kedua flow sensor terpasang di pipa | ✅ YA |
+> Baru dilakukan saat uji deteksi kebocoran (Lembar 2), bukan saat uji kinerja.
+
+## H. Prosedur uji throughput (urut)
+
+> N=100 pesan beruntun, ulang 3× per kombinasi. Justifikasi angka: lihat
+> `bab 4/rancangan-pengujian-berujukan.md` §3 ("Jumlah sampel untuk UJI THROUGHPUT").
+
+### CoAP (mulai di sini — lebih simpel)
+1. Jalankan `python coap_server.py` → catat IP.
+2. Buka `coap/coap-uji-throughput.ino` → isi ssid/password/IP + `PAYLOAD_SIZE=16`.
+3. Upload (tahan BOOT) → Serial Monitor 115200 → tekan EN.
+4. Tunggu "=== HASIL THROUGHPUT ===" → catat msg/s, bps, success % ke Lembar 3B.
+5. Ulangi 2× lagi (tekan EN) → total 3 data untuk 16B.
+6. Ganti `PAYLOAD_SIZE=64`, lalu `256` → masing-masing 3×.
+
+### MQTT (setelah CoAP)
+1. Jalankan Mosquitto (`listener 0.0.0.0`) + `python echo_mqtt.py` (pastikan "Subscribe...").
+2. Buka `mqtt/mqtt-uji-throughput.ino` → isi ssid/password/`mqtt_server` + `PAYLOAD_SIZE=16`.
+3. Upload → Serial Monitor → tekan EN → catat hasil → ulang 3×.
+4. Ganti payload 64, 256 (masing-masing 3×).
+
+## I. Justifikasi angka N=100 (untuk dosen — JANGAN asal)
+- **Mishra & Guru 2026 [M2]:** pakai **50 & 500 iterasi** (simulasi NS-3). Kita hardware,
+  jadi 500 kurang praktis (lama + hotspot HP tak stabil utk burst besar) → pilih **100**
+  sebagai **titik tengah 50–500** yang realistis di hardware.
+- **Krikorian dkk. 2023 [M-arXiv]:** ukur throughput dari **pengiriman kontinu** (setup
+  aiocoap+Mosquitto mirip kita) → mendukung metode "kirim beruntun, hitung laju".
+- **Prinsip laju:** butuh cukup banyak pesan beruntun agar bps stabil/representatif; 100
+  memberi durasi uji beberapa detik tanpa membebani hotspot berlebihan.
+- **Pengulangan 3×** → rata-rata (konsistensi), selaras pelaporan statistik [R1]/Silva.
+- ⚠️ Konfirmasi dosen: boleh 100; bila diminta ikut Mishra (50/500) bisa, tapi 500 di
+  hardware+hotspot berisiko lama/gagal.
+
+## J. Rumus throughput (mengacu [M2] Mishra)
+```
+Throughput (bps)   = (pesan_sukses × payload_byte × 8) / total_waktu_detik
+Throughput (msg/s) = pesan_sukses / total_waktu_detik
+Success rate (%)   = (pesan_sukses / 100) × 100
+```
+(kode sudah menghitung otomatis & mencetak di Serial)
