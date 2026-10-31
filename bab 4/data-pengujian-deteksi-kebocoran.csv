@@ -1,0 +1,38 @@
+waktu_s,flow1_lmin,flow2_lmin,selisih_lmin,pressure_adc,status_sistem,kondisi_keran,keterangan
+# ===== DATA PENGUJIAN DETEKSI KEBOCORAN (STEP 14) =====
+# Sumber: Serial Monitor ESP32 (115200 baud) - data ASLI pengujian alat, tidak diolah.
+# Firmware: deteksi-kebocoran.ino | THRESHOLD_SELISIH=0.50 L/min (default, BELUM dikalibrasi).
+# Susunan: Galon->[utama]->Flow1->[cabang-1]->Flow2->[cabang-2]->Pressure->keluar. Cabang=titik bocor ke ember.
+# Logika: status=BOCOR bila (flow1-flow2) > threshold. Kolom kondisi_keran = catatan manual penguji.
+#
+# ---- CUPLIKAN KONDISI BOCOR (keran cabang DIBUKA - dikonfirmasi penguji) ----
+72,2.27,0.13,2.13,2163,BOCOR,cabang dibuka,galon penuh; Flow1 deras Flow2~0 (air kabur ke ember)
+73,2.27,0.00,2.27,240,BOCOR,cabang dibuka,
+74,2.27,0.00,2.27,0,BOCOR,cabang dibuka,
+75,2.13,0.00,2.13,0,BOCOR,cabang dibuka,
+76,2.27,0.00,2.27,0,BOCOR,cabang dibuka,
+77,2.13,0.00,2.13,0,BOCOR,cabang dibuka,
+78,2.13,0.00,2.13,0,BOCOR,cabang dibuka,
+79,2.27,0.00,2.27,498,BOCOR,cabang dibuka,
+80,1.73,0.00,1.73,944,BOCOR,cabang dibuka,
+#
+# ---- CUPLIKAN KONDISI BOCOR (sesi kedua - Flow1 & Flow2 sama-sama terbaca) ----
+248,2.13,0.27,1.87,2454,BOCOR,cabang dibuka,pertama kali Flow2 ikut berputar (galon penuh)
+249,1.73,0.13,1.60,2133,BOCOR,cabang dibuka,
+250,1.73,0.27,1.47,1566,BOCOR,cabang dibuka,
+251,1.60,0.27,1.33,1143,BOCOR,cabang dibuka,
+252,1.73,0.00,1.73,731,BOCOR,cabang dibuka,
+253,1.73,0.13,1.60,386,BOCOR,cabang dibuka,
+254,1.73,0.13,1.60,176,BOCOR,cabang dibuka,
+255,1.73,0.13,1.60,0,BOCOR,cabang dibuka,
+256,1.60,0.00,1.60,0,BOCOR,cabang dibuka,
+257,1.73,0.00,1.73,0,BOCOR,cabang dibuka,
+258,1.73,0.13,1.60,0,BOCOR,cabang dibuka,
+259,1.73,0.27,1.47,0,BOCOR,cabang dibuka,
+260,1.73,0.13,1.60,0,BOCOR,cabang dibuka,
+261,1.73,0.13,1.60,0,BOCOR,cabang dibuka,
+#
+# ---- CATATAN KONDISI NORMAL ----
+# Kondisi NORMAL BERSIH (kedua cabang tutup, Flow1 & Flow2 stabil bersamaan) BELUM terekam.
+# Pada aliran lemah, kedua flow 0.00 (turbin tak berputar). Pada galon penuh, Flow2 under-read.
+# -> PERLU uji ulang NORMAL terkontrol (galon penuh, kedua cabang TUTUP) untuk kalibrasi threshold.
