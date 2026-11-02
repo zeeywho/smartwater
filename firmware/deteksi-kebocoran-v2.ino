@@ -117,20 +117,20 @@ void loop() {
     if (isnan(busV) || isinf(busV)) busV = 0;
     if (isnan(cur)  || isinf(cur))  cur  = 0;
 
-    // ===== LOGIKA DETEKSI per-TITIK =====
-    // BOCOR bila ada aliran terdeteksi di salah satu flow sensor (titik rawan bocor).
-    // Flow1 > Flow2 prioritas titik 1; bila hanya Flow2 -> titik 2.
-    const char* status;   // untuk dashboard: NORMAL / BOCOR
-    const char* titik;    // lokasi: "-" / "TITIK_1" / "TITIK_2"
-    if (flow1 > AMBANG_FLOW && flow1 >= flow2) {
-      status = "BOCOR"; titik = "TITIK_1";
-    } else if (flow2 > AMBANG_FLOW) {
-      status = "BOCOR"; titik = "TITIK_2";
-    } else {
-      status = "NORMAL"; titik = "-";
-    }
-    // (pressure = indikator PENDUKUNG; tidak dipakai sbg penentu status. Tetap dikirim
-    //  agar bisa dianalisis: cenderung turun saat ada aliran keluar/bocor.)
+    // ===== LOGIKA DETEKSI (disederhanakan: NORMAL vs BOCOR) =====
+    // BOCOR bila ada aliran terdeteksi di salah satu flow sensor (ada air keluar via cabang).
+    // CATATAN: penentuan TITIK (lokasi) tidak dipakai sebagai status utama karena susunan
+    // pipa SERI membuat Flow1 (hulu) hampir selalu ikut mengalir untuk kebocoran di titik
+    // mana pun -> lokalisasi titik dibahas sebagai pengembangan lanjutan. Field "titik"
+    // tetap dikirim sebagai informasi tambahan (indikatif), bukan penentu.
+    bool adaAliran = (flow1 > AMBANG_FLOW) || (flow2 > AMBANG_FLOW);
+    const char* status = adaAliran ? "BOCOR" : "NORMAL";
+    // info tambahan (indikatif saja): sensor mana yang paling banyak membaca aliran
+    const char* titik;
+    if (!adaAliran)            titik = "-";
+    else if (flow2 > flow1)    titik = "TITIK_2";  // dominan di hilir
+    else                       titik = "TITIK_1";  // dominan di hulu
+    // (pressure = indikator PENDUKUNG; cenderung turun saat ada aliran keluar/bocor.)
 
     // kirim JSON ke dashboard (ada status + titik + pressure pendukung)
     char payload[240];
