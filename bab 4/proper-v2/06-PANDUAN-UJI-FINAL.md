@@ -50,9 +50,11 @@
 - [ ] Verifikasi terima data: `mosquitto_sub -h localhost -t smartwater/data -v`
       → JSON mengalir (pressure_adc berubah = data nyata). ✅
 
-### 0.5 CoAP jalan (rujuk `firmware/setup-coap.md`) — untuk uji kinerja/JSON
-- [ ] Jalankan server: `python coap_server.py` (aiocoap, resource `/sensor`, UDP 5683).
-- [ ] Saat pakai firmware CoAP: server cetak `[CoAP] Diterima (PUT): {...}` + ESP32 dapat `OK`. ✅
+### 0.5 CoAP jalan + JEMBATAN ke dashboard (rujuk `firmware/setup-coap.md` & `07-setup-jembatan-coap-dashboard.md`)
+- [ ] `pip install paho-mqtt aiocoap` (sekali saja).
+- [ ] Jalankan server versi bridge: `python coap_server_bridge.py` (server CoAP + re-publish MQTT).
+- [ ] Terminal muncul `[BRIDGE] Terhubung ke broker MQTT ...` + `=== CoAP Server (+ jembatan MQTT) ===`.
+- [ ] Saat pakai firmware CoAP: server cetak `[CoAP] Diterima (PUT)` + `[BRIDGE] -> MQTT ...` + ESP32 dapat `OK`. ✅
       (Untuk TAHAP A deteksi, cukup MQTT. CoAP dipakai di TAHAP C & uji kinerja.)
 
 ### 0.6 Dashboard Node-RED jalan (rujuk `firmware/setup-dashboard.md`)
@@ -61,6 +63,9 @@
 - [ ] Gauge **Flow1/Flow2/Pressure** bergerak saat air mengalir. ✅
 - [ ] Node text **Status** menampilkan `msg.payload.status` (NORMAL/BOCOR). ✅
 - [ ] (opsional) warna hijau=NORMAL, merah=BOCOR.
+- [ ] **Jembatan CoAP tampil di dashboard** (grup "CoAP"): tambah node `mqtt in` topik
+      `smartwater/data-coap` → json → gauge/text. Lihat `07-setup-jembatan-coap-dashboard.md`.
+      Verifikasi: kirim data CoAP → gauge grup "CoAP" bergerak. ✅ (melengkapi F10 CoAP)
 
 ### 0.7 Logging CSV otomatis AKTIF (rujuk `02-setup-logging-csv-otomatis.md`)
 - [ ] Node-RED: cabang `json → csv → file` ke `C:\smartwater\log-deteksi.csv` (append).

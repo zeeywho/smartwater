@@ -65,7 +65,7 @@ INA219 seri) + deteksi kebocoran (butuh air).
 | Data MQTT tampil real-time (gauge Pressure gerak) | ✅ |
 | Parse JSON (fix nan/inf) | ✅ |
 | Logika deteksi bocor (function selisih flow) | ✅ (logika siap; hasil nunggu air) |
-| **Jembatan CoAP → dashboard (2 protokol)** | ⏳ BELUM (butuh alat; node coap-in / bridge) |
+| **Jembatan CoAP → dashboard (2 protokol)** | 🚧 KODE SIAP (`coap/coap_server_bridge.py` + panduan `proper-v2/07`); tinggal jalankan & verifikasi |
 | Logging CSV | ⏳ opsional |
 > Bukti: `firmware/setup-dashboard.md`, `dashboard/flow-dashboard.json`.
 

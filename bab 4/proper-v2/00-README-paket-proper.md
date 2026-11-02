@@ -22,6 +22,8 @@
 | `03-template-hasil-deteksi-kebocoran.md` | Kerangka penyajian hasil (tabel + confusion matrix + grafik), angka kosong |
 | `04-lembar-pengujian-deteksi-v2.md` | Lembar isi saat uji (confusion-matrix-ready) |
 | `05-rencana-figure-skripsi.md` | Daftar figure (ala [R2]) + data sumbernya (biar tak kerja 2×) |
+| `06-PANDUAN-UJI-FINAL.md` | Panduan uji lengkap: setup+verifikasi → deteksi → JSON → energy(nanti) + pemetaan outline |
+| `07-setup-jembatan-coap-dashboard.md` | Jembatan CoAP → dashboard (CoAP→MQTT re-publish); pakai `coap/coap_server_bridge.py` |
 
 ## Urutan pakai
 1. Baca `01` → paham metode & N (bawa ke dosen utk konfirmasi angka N).
