@@ -117,31 +117,23 @@ void loop() {
     if (isnan(busV) || isinf(busV)) busV = 0;
     if (isnan(cur)  || isinf(cur))  cur  = 0;
 
-    // ===== LOGIKA DETEKSI + LOKALISASI TITIK (sesuai susunan SERI) =====
-    // Susunan: Galon -> Flow1 -> Cabang-1 -> Flow2 -> Cabang-2 (ujung).
-    // Prinsip kekekalan aliran pada pipa seri:
-    //   - Bocor di CABANG-1 (antara Flow1 & Flow2): air kabur SEBELUM Flow2
-    //       => Flow1 mengalir, Flow2 ~0  (ada selisih: Flow1 >> Flow2)
-    //   - Bocor di CABANG-2 (setelah Flow2): air lewat Flow1 DAN Flow2 dulu baru kabur
-    //       => Flow1 mengalir DAN Flow2 ikut mengalir (Flow2 >= AMBANG)
-    //   - Tidak ada aliran => NORMAL
-    // Jadi pembeda titik = APAKAH Flow2 ikut mengalir atau tidak.
-    bool alir1 = (flow1 > AMBANG_FLOW);
-    bool alir2 = (flow2 > AMBANG_FLOW);
-    const char* status;   // NORMAL / BOCOR
-    const char* titik;    // "-" / "TITIK_1" / "TITIK_2"
-    if (!alir1 && !alir2) {
-      status = "NORMAL"; titik = "-";
-    } else if (alir1 && !alir2) {
-      // air masuk Flow1 tapi tak sampai Flow2 => bocor di cabang-1 (hulu)
-      status = "BOCOR"; titik = "TITIK_1";
-    } else if (alir2) {
-      // Flow2 ikut mengalir (air lewat Flow1->Flow2 baru kabur) => bocor di cabang-2 (hilir)
-      // (termasuk kasus hanya Flow2 terbaca karena fluktuasi)
-      status = "BOCOR"; titik = "TITIK_2";
-    } else {
-      status = "NORMAL"; titik = "-";
-    }
+    // ===== FILTER ANTI-NOISE =====
+    // YF-S201 spec maksimum ~30 L/min. Pembacaan di atas FLOW_MAX_VALID dianggap NOISE
+    // (pulsa hantu dari pin floating/gangguan), bukan aliran nyata -> dinolkan.
+    const float FLOW_MAX_VALID = 35.0;   // L/min (sedikit di atas spec 30 utk toleransi)
+    if (flow1 > FLOW_MAX_VALID) flow1 = 0;
+    if (flow2 > FLOW_MAX_VALID) flow2 = 0;
+
+    // ===== LOGIKA DETEKSI: NORMAL vs BOCOR =====
+    // Ada aliran terdeteksi di salah satu flow sensor (air keluar via cabang) => BOCOR.
+    // Tidak ada aliran => NORMAL.
+    // (Lokalisasi titik tidak dipakai sebagai status: pada susunan seri, sensor hulu
+    //  hampir selalu ikut mengalir & sensor hilir under-read pada debit gravitasi rendah,
+    //  sehingga lokalisasi belum andal -> dibahas sebagai pengembangan lanjutan.)
+    bool adaAliran = (flow1 > AMBANG_FLOW) || (flow2 > AMBANG_FLOW);
+    const char* status = adaAliran ? "BOCOR" : "NORMAL";
+    // "titik" = info tambahan indikatif (sensor mana yg dominan), BUKAN penentu status.
+    const char* titik = !adaAliran ? "-" : (flow2 > flow1 ? "TITIK_2" : "TITIK_1");
     // (pressure = indikator PENDUKUNG; cenderung turun saat ada aliran keluar/bocor.)
 
     // kirim JSON ke dashboard (ada status + titik + pressure pendukung)
