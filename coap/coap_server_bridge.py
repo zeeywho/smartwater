@@ -15,7 +15,15 @@ MQTT_PORT = 1883
 MQTT_TOPIC_COAP = "smartwater/data-coap"   # topik KHUSUS CoAP (beda dari MQTT 'smartwater/data')
 
 # siapkan satu MQTT client global untuk re-publish
-mqtt_client = mqtt.Client(client_id="coap_bridge")
+# Kompatibel paho-mqtt 2.x (pakai CallbackAPIVersion) & fallback ke 1.x bila perlu.
+try:
+    mqtt_client = mqtt.Client(
+        mqtt.CallbackAPIVersion.VERSION2,
+        client_id="coap_bridge"
+    )
+except (AttributeError, TypeError):
+    # paho-mqtt versi lama (1.x) tidak punya CallbackAPIVersion
+    mqtt_client = mqtt.Client(client_id="coap_bridge")
 
 def setup_mqtt():
     try:
