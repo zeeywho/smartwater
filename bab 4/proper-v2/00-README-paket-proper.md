@@ -24,6 +24,13 @@
 | `05-rencana-figure-skripsi.md` | Daftar figure (ala [R2]) + data sumbernya (biar tak kerja 2×) |
 | `06-PANDUAN-UJI-FINAL.md` | Panduan uji lengkap: setup+verifikasi → deteksi → JSON → energy(nanti) + pemetaan outline |
 | `07-setup-jembatan-coap-dashboard.md` | Jembatan CoAP → dashboard (CoAP→MQTT re-publish); pakai `coap/coap_server_bridge.py` |
+| **`01b-metodologi-deteksi-PERTITIK-final.md`** | ⭐ KONSEP FINAL deteksi: PER-TITIK (ganti dari "selisih"); cocok alat (pipa tertutup) + jawab tujuan/rumusan |
+| **`04b-lembar-pengujian-PERTITIK.md`** | Lembar uji konsep per-titik (NORMAL / BOCOR T1 / BOCOR T2) |
+
+> ⚠️ PERUBAHAN KONSEP (penting): metode deteksi diganti dari "selisih Flow1−Flow2" (file `01`,
+> `03`, `04`) ke **PER-TITIK** (file `01b`, `04b`) karena lebih sesuai karakteristik alat
+> (pipa ujung tertutup). Firmware: `firmware/deteksi-kebocoran-v2.ino`. File konsep lama
+> dibiarkan sebagai arsip/jejak proses.
 
 ## Urutan pakai
 1. Baca `01` → paham metode & N (bawa ke dosen utk konfirmasi angka N).

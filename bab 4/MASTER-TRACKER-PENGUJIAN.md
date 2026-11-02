@@ -168,7 +168,7 @@ INA219 seri) + deteksi kebocoran (butuh air).
 | 4.6.3.2 Throughput | ✅ draft + tabel (data real dipindah ke narasi) |
 | 4.6.3.4 Energy | ⏳ (butuh INA219 seri) |
 | 4.6.3.5 Reliability | ✅ draft + tabel PDR |
-| 4.6.2 Deteksi kebocoran | 🚧 (uji BOCOR terbukti; NORMAL bersih + kalibrasi + akurasi belum) |
+| 4.6.2 Deteksi kebocoran | 🚧 KONSEP DIGANTI → PER-TITIK (`deteksi-kebocoran-v2.ino`); cocok alat pipa tertutup; tinggal uji NORMAL/BOCOR T1/T2 + akurasi |
 | 4.7 Analisis perbandingan | 🚧 (latency/loss/throughput/reliability ✅; energy ⏳) |
 | 4.8 Pembahasan | 🚧 (temuan buffer & jaringan ✅; lengkapi) |
 | 4.9 Ringkasan | ⏳ |
