@@ -22,7 +22,9 @@
  *          [M12] Ali (2022) — tekanan sebagai indikator pendukung kebocoran.
  *
  * CATATAN: deteksi UTAMA = flow (menentukan ADA bocor + DI MANA). Pressure = pendukung.
- * Pin: Flow1=GPIO25, Flow2=GPIO27, Pressure=GPIO34(ADC), INA219=I2C(21/22).
+ * Pin: Flow1=GPIO25, Flow2=GPIO26, Pressure=GPIO34(ADC), INA219=I2C(21/22).
+ *   (Flow2 dipindah dari GPIO27 ke GPIO26 karena GPIO27 tidak membaca pulsa di unit ini —
+ *    sensor & kabel Flow2 sehat, terbukti saat dicoba di pin lain.)
  */
 #include <WiFi.h>
 #include <PubSubClient.h>
@@ -50,7 +52,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 Adafruit_INA219 ina219;
 
-const int FLOW1_PIN = 25, FLOW2_PIN = 27, PRESSURE_PIN = 34;
+const int FLOW1_PIN = 25, FLOW2_PIN = 26, PRESSURE_PIN = 34;  // Flow2 dipindah 27->26 (GPIO27 bermasalah di unit ini)
 volatile unsigned long pulse1 = 0, pulse2 = 0;
 void IRAM_ATTR cp1() { pulse1++; }
 void IRAM_ATTR cp2() { pulse2++; }
