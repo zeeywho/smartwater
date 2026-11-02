@@ -117,19 +117,31 @@ void loop() {
     if (isnan(busV) || isinf(busV)) busV = 0;
     if (isnan(cur)  || isinf(cur))  cur  = 0;
 
-    // ===== LOGIKA DETEKSI (disederhanakan: NORMAL vs BOCOR) =====
-    // BOCOR bila ada aliran terdeteksi di salah satu flow sensor (ada air keluar via cabang).
-    // CATATAN: penentuan TITIK (lokasi) tidak dipakai sebagai status utama karena susunan
-    // pipa SERI membuat Flow1 (hulu) hampir selalu ikut mengalir untuk kebocoran di titik
-    // mana pun -> lokalisasi titik dibahas sebagai pengembangan lanjutan. Field "titik"
-    // tetap dikirim sebagai informasi tambahan (indikatif), bukan penentu.
-    bool adaAliran = (flow1 > AMBANG_FLOW) || (flow2 > AMBANG_FLOW);
-    const char* status = adaAliran ? "BOCOR" : "NORMAL";
-    // info tambahan (indikatif saja): sensor mana yang paling banyak membaca aliran
-    const char* titik;
-    if (!adaAliran)            titik = "-";
-    else if (flow2 > flow1)    titik = "TITIK_2";  // dominan di hilir
-    else                       titik = "TITIK_1";  // dominan di hulu
+    // ===== LOGIKA DETEKSI + LOKALISASI TITIK (sesuai susunan SERI) =====
+    // Susunan: Galon -> Flow1 -> Cabang-1 -> Flow2 -> Cabang-2 (ujung).
+    // Prinsip kekekalan aliran pada pipa seri:
+    //   - Bocor di CABANG-1 (antara Flow1 & Flow2): air kabur SEBELUM Flow2
+    //       => Flow1 mengalir, Flow2 ~0  (ada selisih: Flow1 >> Flow2)
+    //   - Bocor di CABANG-2 (setelah Flow2): air lewat Flow1 DAN Flow2 dulu baru kabur
+    //       => Flow1 mengalir DAN Flow2 ikut mengalir (Flow2 >= AMBANG)
+    //   - Tidak ada aliran => NORMAL
+    // Jadi pembeda titik = APAKAH Flow2 ikut mengalir atau tidak.
+    bool f1 = (flow1 > AMBANG_FLOW);
+    bool f2 = (flow2 > AMBANG_FLOW);
+    const char* status;   // NORMAL / BOCOR
+    const char* titik;    // "-" / "TITIK_1" / "TITIK_2"
+    if (!f1 && !f2) {
+      status = "NORMAL"; titik = "-";
+    } else if (f1 && !f2) {
+      // air masuk Flow1 tapi tak sampai Flow2 => bocor di cabang-1 (hulu)
+      status = "BOCOR"; titik = "TITIK_1";
+    } else if (f2) {
+      // Flow2 ikut mengalir (air lewat Flow1->Flow2 baru kabur) => bocor di cabang-2 (hilir)
+      // (termasuk kasus hanya Flow2 terbaca karena fluktuasi)
+      status = "BOCOR"; titik = "TITIK_2";
+    } else {
+      status = "NORMAL"; titik = "-";
+    }
     // (pressure = indikator PENDUKUNG; cenderung turun saat ada aliran keluar/bocor.)
 
     // kirim JSON ke dashboard (ada status + titik + pressure pendukung)
