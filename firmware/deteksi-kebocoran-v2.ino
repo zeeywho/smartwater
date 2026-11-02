@@ -126,16 +126,16 @@ void loop() {
     //       => Flow1 mengalir DAN Flow2 ikut mengalir (Flow2 >= AMBANG)
     //   - Tidak ada aliran => NORMAL
     // Jadi pembeda titik = APAKAH Flow2 ikut mengalir atau tidak.
-    bool f1 = (flow1 > AMBANG_FLOW);
-    bool f2 = (flow2 > AMBANG_FLOW);
+    bool alir1 = (flow1 > AMBANG_FLOW);
+    bool alir2 = (flow2 > AMBANG_FLOW);
     const char* status;   // NORMAL / BOCOR
     const char* titik;    // "-" / "TITIK_1" / "TITIK_2"
-    if (!f1 && !f2) {
+    if (!alir1 && !alir2) {
       status = "NORMAL"; titik = "-";
-    } else if (f1 && !f2) {
+    } else if (alir1 && !alir2) {
       // air masuk Flow1 tapi tak sampai Flow2 => bocor di cabang-1 (hulu)
       status = "BOCOR"; titik = "TITIK_1";
-    } else if (f2) {
+    } else if (alir2) {
       // Flow2 ikut mengalir (air lewat Flow1->Flow2 baru kabur) => bocor di cabang-2 (hilir)
       // (termasuk kasus hanya Flow2 terbaca karena fluktuasi)
       status = "BOCOR"; titik = "TITIK_2";
