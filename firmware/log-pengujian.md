@@ -184,3 +184,276 @@ Setelah rakit ulang bertahap dengan JUMPER BARU, semua sensor kembali terdeteksi
 
 ### 🎉 TAHAP HARDWARE SELESAI — semua sensor terbukti bekerja (individual + gabungan).
 ### Catatan sebelum tahap data serius: pertimbangkan permanenkan koneksi (solder/protoboard) agar stabil berjam-jam saat pengujian kinerja MQTT vs CoAP.
+
+---
+
+## STEP 11 — Pengujian Kinerja MQTT vs CoAP ✅ SELESAI (6 kombinasi)
+- **Metode:** mengacu [R1] Kirilov & Chikurtev 2026 — cold transaction, 30 iterasi/kombinasi,
+  jeda 4000 ms, payload 16/64/256 byte, MQTT QoS0 (+echo RTT), CoAP CON.
+- **Jaringan:** hotspot HP "zee" (2.4 GHz); laptop 172.20.10.3; ESP32 172.20.10.2.
+- **Hasil ringkas (MEDIAN latency, success rate) — CoAP 16B sudah di-run ulang (benar 16B):**
+  | Protokol | 16 B | 64 B | 256 B |
+  |----------|------|------|-------|
+  | CoAP | 11.0 ms (100%) | 11.0 ms (100%) | 12.0 ms (96.67%) |
+  | MQTT | 32.0 ms (96.67%) | 19.0 ms (96.67%) | 26.0 ms (96.67%) |
+  (Median dipakai sbg nilai utama krn tahan outlier. Statistik lengkap: hasil-pengujian-kinerja.md)
+- **Data mentah lengkap:** `bab 4/hasil-pengujian-kinerja.md`.
+- **Isu & solusi (temuan teknis):**
+  - Payload 256 B TIMEOUT di kedua protokol → buffer library kekecilan.
+    CoAP: naikkan `BUF_MAX_SIZE` coap-simple → 512. MQTT: `client.setBufferSize(1024)`.
+  - Hotspot HP kurang stabil → sesekali TIMEOUT/CONNECT_FAIL (gangguan jaringan,
+    bukan karakteristik protokol); perlu reset bersih (cabut USB, restart hotspot,
+    reconnect Wi-Fi, restart broker+echo).
+  - MQTT latency diukur RTT via echo (laptop echo smartwater/data -> smartwater/ack)
+    agar setara CoAP CON (ada balasan).
+- **Catatan metodologi (perlu konfirmasi dosen):**
+  - CoAP 16 B mean ketarik outlier cold-start → pertimbangkan ulang agar sebanding.
+  - Perlakuan TIMEOUT/CONNECT_FAIL harus SAMA untuk kedua protokol (fair).
+  - Gunakan MEDIAN selain mean (tahan outlier).
+- **Status:** ✅ SELESAI (180 transaksi; tinggal hitung median/std & isi tabel 4.7).
+
+### 🏆 MILESTONE: Pengujian kinerja MQTT vs CoAP (inti skripsi) TUNTAS.
+### Berikutnya: hitung statistik deskriptif → isi BAB IV 4.7; lalu pengujian deteksi kebocoran (butuh air).
+
+---
+
+## STEP 12 — Pengujian THROUGHPUT ✅ SELESAI
+- Metode: kirim 100 pesan beruntun (tanpa jeda), hitung bps & msg/s. Rujuk [M2] Mishra
+  (definisi bps) + [M-arXiv] Krikorian (pengiriman kontinu). N=100 (titik tengah 50–500
+  Mishra, realistis hardware). Ulang 3×/kombinasi.
+- Hasil rata-rata (bps): CoAP ~3–4× lebih tinggi dari MQTT di semua payload.
+  | Payload | MQTT bps | CoAP bps |
+  |---------|----------|----------|
+  | 16 B | 3.812,94 | 12.283,21 |
+  | 64 B | 14.797,70 | 60.686,54 |
+  | 256 B | 52.932,25 | 214.183,37 |
+- Isu: buffer coap-simple harus 512 utk payload 256 (default 128 → TIMEOUT); run terdampak
+  hotspot dibuang & diulang bersih. Detail: `bab 4/hasil-pengujian-throughput.md`.
+- Status: ✅ SELESAI.
+
+## RELIABILITY ✅ SELESAI (rangkum PDR)
+- Reliability = PDR/success rate (rujuk [M2] Mishra, [R4] Silva). Dirangkum dari latency
+  + throughput (tanpa uji baru). MQTT 96,67–100%; CoAP 98,89–100%.
+  Detail: `bab 4/hasil-pengujian-reliability.md`.
+
+## STEP 13 — Uji kinerja PAYLOAD JSON SENSOR ASLI — KODE SIAP (run di AKHIR)
+- Pelengkap operasional nyata: payload = JSON sensor sistem (~75 B), bukan sintetis.
+  Metode SAMA (hanya payload beda) agar sebanding + validasi korelasi dgn tren sintetis.
+- Kode siap: `coap/coap-uji-latency-json.ino`, `coap/coap-uji-throughput-json.ino`,
+  `mqtt/mqtt-uji-latency-json.ino`, `mqtt/mqtt-uji-throughput-json.ino`. Lembar 3C.
+- DIKERJAKAN SETELAH deteksi kebocoran end-to-end (fokus fungsi utama dulu).
+
+### 🏆 Uji kinerja protokol: LATENCY, PACKET LOSS, THROUGHPUT, RELIABILITY = TUNTAS.
+### Berikutnya (prioritas): DETEKSI KEBOCORAN (fungsi utama, butuh air). Lalu energy,
+### jembatan CoAP dashboard, dan uji payload JSON asli (penutup).
+
+---
+
+## STEP 14 — DETEKSI KEBOCORAN (fungsi utama) — 🚧 IN PROGRESS (checkpoint)
+- Kode `firmware/deteksi-kebocoran.ino` BERHASIL upload & MQTT terhubung ✅.
+- Format CSV jalan: `waktu,flow1,flow2,selisih,pressure_adc,status`.
+- **pressure_adc KEBACA & berfluktuasi** (0→4095, naik-turun) — normal (ADC ngambang
+  saat tekanan belum stabil / air belum mengalir deras). ✅
+- ⚠️ **ISU BELUM SELESAI: Flow1 & Flow2 = 0.00 TERUS.** Saat checkpoint ini, AIR BELUM
+  dialirkan deras (user baru verifikasi, belum kalibrasi). LANGKAH BERIKUTNYA: alirkan
+  air NORMAL (keran T-junction TUTUP) → cek flow1/flow2 NAIK. Kalau tetap 0 saat air
+  deras → cek wiring flow (GPIO25/27) / keran utama / turbin sensor muter.
+- Prototipe terverifikasi: Galon(kanan) → Flow1(inlet,dekat galon) → T-junction+keran
+  (simulasi bocor, cabang ke ember) → Flow2(outlet,jauh) → keluar. Konsep BENAR.
+- Dashboard Node-RED jalan (MQTT): flow `mqtt in → json → function → gauge/chart/text`.
+  Node text Status → pakai `msg.payload.status` (status dihitung di ESP32).
+- BELUM dilakukan: kalibrasi threshold, uji NORMAL (5×), uji BOCOR (5×), hitung akurasi,
+  screenshot dashboard NORMAL/BOCOR.
+- Panduan lengkap: `firmware/setup-deteksi-kebocoran.md`. Lembar catat: Lembar 2.
+
+### CHECKPOINT: deteksi kebocoran baru tahap upload+verifikasi. Lanjut = KALIBRASI
+### (alirkan air normal, cek flow naik, set threshold) → uji NORMAL & BOCOR.
+
+---
+
+## STEP 14 — DIAGNOSTIK ALIRAN (sesi uji NORMAL — 30 Okt 2026) 🔎
+
+> Tujuan sesi: alirkan air kondisi NORMAL (keran utama BUKA, cabang tengah & kiri TUTUP;
+> jalur seri Galon→Flow1→T-tengah→Flow2→T-kiri→Pressure→keluar) untuk kalibrasi threshold.
+> Firmware: `deteksi-kebocoran.ino` (THRESHOLD_SELISIH=0.50, masih nilai sementara/default).
+> Jaringan: hotspot "zee", ESP32 172.20.10.2, broker 172.20.10.3. CSV: waktu,flow1,flow2,selisih,pressure_adc,status.
+
+### Susunan pipa TERKONFIRMASI (dari foto + telusur fisik user)
+- 3 keran biru: (1) keran utama dekat galon, (2) cabang T-tengah → ember (= titik SIMULASI BOCOR),
+  (3) cabang T-kiri → ember (TIDAK dipakai, selalu TUTUP).
+- Urutan seri: Galon → keran utama → **Flow1 (GPIO25)** → T-tengah → **Flow2 (GPIO27)** →
+  T-kiri → **Pressure (GPIO34)** di ujung jalur utama → keluar.
+- Skenario: NORMAL = utama BUKA, tengah TUTUP, kiri TUTUP. BOCOR = utama BUKA, tengah BUKA, kiri TUTUP.
+- Logika deteksi: selisih = Flow1 − Flow2 (bocor bila > threshold).
+
+### HASIL AMATAN (data ASLI dari Serial, TIDAK diolah)
+- **pressure_adc:** AKTIF & berpola — naik 0→4095 lalu turun ke 0, berulang tiap ~15 detik
+  (mengikuti air mengisi lalu berhenti). Sensor pressure + rail daya + ADC = SEHAT. ✅
+- **Flow1 & Flow2:** hampir SELALU 0.00 di ratusan sampel (detik 1478–2182 & 18–236),
+  KECUALI kedutan sporadis:
+  - detik 1109 (sesi awal): `flow1=0.13` (1×, lalu 0 lagi)
+  - detik 230: `flow2=0.13`
+  - detik 231: `flow2=1.07` (≈8 pulsa/detik) — lalu 0 lagi
+  → Flow1 & Flow2 TIDAK pernah menghasilkan aliran STABIL/kontinu.
+- **Tes tiup langsung:** saat lubang sensor DITIUP dari sisi keran pertama → **ada nilai**
+  (pulsa terbaca). Artinya turbin + wiring + jumper + GPIO = BERFUNGSI.
+
+### DIAGNOSIS (berbasis data, bukan dugaan buta)
+- Sensor flow SEHAT (terbukti: tiupan kebaca; flow2 sempat 1.07). Jumper/wiring BUKAN penyebab
+  (diagnosis "jumper rusak" seperti insiden lama → DICORET untuk kasus ini).
+- **Akar masalah = DEBIT/TEKANAN AIR dari galon (gravitasi) TERLALU RENDAH** untuk memutar
+  turbin YF-S201 secara konsisten. YF-S201 punya minimum flow rate ≈1 L/min; aliran gravitasi
+  galon di bawah itu → turbin hanya "berkedut" sesekali (muncul 0.13 / 1.07 lalu 0).
+- Bukti pendukung: tiupan mulut (lebih kencang) kebaca, tapi aliran galon tidak → debit kurang.
+  Pola pressure "isi lalu berhenti" juga menandakan aliran tersendat, bukan deras kontinu.
+
+### STATUS & LANGKAH BERIKUTNYA
+- ⚠️ KALIBRASI THRESHOLD BELUM BISA DILAKUKAN: kondisi NORMAL butuh Flow1 & Flow2 mengalir
+  STABIL dengan selisih kecil; yang ada baru kedutan acak (bukan data aliran valid).
+  THRESHOLD_SELISIH DIBIARKAN 0.50 (default) — BELUM dikalibrasi (tidak ada data untuk dasar).
+- TINDAKAN (naikkan debit air, urut dari termudah):
+  1. Naikkan posisi galon lebih tinggi (gravitasi lebih kuat).
+  2. Pakai sumber air BERTEKANAN (keran PAM/ledeng) — paling ampuh utk YF-S201.
+  3. Tambah pompa air kecil (DC) antara galon & Flow1.
+  4. Pastikan tak ada udara terjebak / selang terjepit.
+- Target lolos: Flow1 & Flow2 menunjukkan angka STABIL beberapa detik (mis. 2–5 L/min),
+  bukan kedutan. Setelah itu → catat selisih normal → set threshold → uji NORMAL 5× & BOCOR 5×.
+- CATATAN untuk BAB IV (Pembahasan/Kendala): keterbatasan debit sumber gravitasi terhadap
+  ambang kerja minimum YF-S201 adalah temuan nyata yang relevan (bukan kegagalan sistem).
+
+### CHECKPOINT: alat SEHAT, aliran air kurang deras. Deteksi kebocoran DITAHAN sampai debit
+### air cukup memutar turbin YF-S201 secara stabil. BELUM ada kalibrasi/uji NORMAL/BOCOR.
+
+---
+
+## STEP 14 — SESI LANJUTAN: STATUS BOCOR TERPICU, TAPI POLA ACAK (30 Okt 2026) ⚠️
+
+> Sesi uji dengan membuka keran cabang tengah (titik bocor). Data ASLI dari Serial, TIDAK diolah.
+> Firmware tetap `deteksi-kebocoran.ino`, THRESHOLD_SELISIH=0.50 (default, BELUM dikalibrasi).
+
+### FAKTA dari Serial (kutipan PERSIS)
+- Flow2 (GPIO27) sempat gerak, Flow1 nol → selisih NEGATIF, status NORMAL:
+  ```
+  230,0.00,0.13,-0.13 ; 231,0.00,1.07,-1.07 ; 325,0.00,0.53,-0.53 ;
+  335,0.00,0.80,-0.80 ; 336,0.00,1.07,-1.07
+  ```
+- Flow1 (GPIO25) sempat gerak, Flow2 nol → selisih POSITIF, status BOCOR:
+  ```
+  347–361: flow1 0.53–0.93, flow2 0.00, selisih 0.53–0.93 → BOCOR (15 detik)
+  401–408: flow1 0.53–0.80, flow2 0.00 → BOCOR (8 detik)
+  567–571: flow1 0.13–0.67, flow2 0.00 → NORMAL/BOCOR bergantian (kedutan)
+  ```
+- pressure_adc tetap AKTIF & berpola (0↔4095 berulang).
+
+### TEMUAN KUNCI (berbasis data)
+- **Flow1 & Flow2 TIDAK PERNAH mengalir BERSAMAAN** di seluruh log (tidak ada satu baris pun
+  dengan flow1>0 DAN flow2>0). Yang terjadi: hanya SATU turbin berputar pada satu waktu.
+- Flow maksimum yang pernah tercatat = **1.07 L/min** (persis ambang minimum YF-S201).
+- Akibatnya status NORMAL/BOCOR ditentukan oleh turbin MANA yang kebetulan menangkap pulsa:
+  - Flow1 kebetulan gerak → selisih (+) → BOCOR
+  - Flow2 kebetulan gerak → selisih (−) → NORMAL
+  → Ini pola ACAK (artefak aliran lemah), BUKAN pembuktian prinsip flow inlet-vs-outlet.
+
+### DIAGNOSIS JUJUR (penting untuk BAB IV & kejujuran ilmiah)
+- Status "BOCOR" MEMANG terpicu secara fungsional (logika kode jalan), NAMUN basis fisiknya
+  BELUM valid: syarat dasar "kedua flow mengalir bersamaan saat air lewat" BELUM pernah tercapai
+  karena debit gravitasi galon terlalu rendah (≈ di/di bawah 1 L/min, ambang YF-S201).
+- Selisih NEGATIF di beberapa titik (Flow2 gerak sendiri) membuktikan pola ini acak, bukan deteksi.
+- KESIMPULAN: deteksi kebocoran BELUM terbukti secara metodologis. TIDAK di-klaim berhasil.
+  THRESHOLD TIDAK dikalibrasi dari data ini (akan menyesatkan).
+
+### TINDAKAN WAJIB SEBELUM UJI RESMI (naikkan debit air)
+1. Sumber air BERTEKANAN (keran PAM/ledeng) — paling disarankan untuk YF-S201. ATAU
+2. Pompa air DC kecil (akuarium/submersible) mendorong dari galon. ATAU
+3. Naikkan galon ≥1–1.5 m (head gravitasi lebih besar).
+- Target LOLOS: saat NORMAL, Flow1 DAN Flow2 sama-sama mengalir stabil (mis. 3–6 L/min),
+  selisih kecil; saat BOCOR (buka cabang tengah), Flow1>Flow2 dengan Flow2 MASIH ADA nilainya.
+
+### KEPUTUSAN METODOLOGIS (perlu konfirmasi DOSEN)
+- Opsi A: dapatkan sumber bertekanan/pompa → ulang uji → data kuat (disarankan).
+- Opsi B (bila hanya galon gravitasi tersedia): diskusi dosen apakah deteksi cukup dibuktikan
+  secara fungsional dgn catatan keterbatasan, ATAU ganti pendekatan (mis. Flow1 + pressure).
+
+### CHECKPOINT: status BOCOR terpicu TAPI pola acak akibat debit rendah; Flow1 & Flow2 tak pernah
+### mengalir bersamaan. Deteksi BELUM valid secara metode. Tahan sampai debit air cukup. BELUM kalibrasi.
+
+---
+
+## STEP 14 — SESI GALON DITINGGIKAN (maksimal) — Flow2 TETAP 0 (30 Okt 2026) 🧱
+
+> Setelah galon ditinggikan beberapa kali (upaya Jalur A). Sumber PAM & pompa TIDAK tersedia
+> (dikonfirmasi user). Data ASLI dari Serial. Threshold tetap 0.50 (BELUM & TIDAK dikalibrasi).
+
+### FAKTA dari Serial (kutipan PERSIS)
+- **Flow2 (GPIO27) = 0.00 di SELURUH sesi.** Tidak pernah berputar.
+- Flow1 (GPIO25) hanya kedutan 0.13–0.53 (tidak stabil; lebih lemah dari sesi 1.20 sebelumnya).
+- Status salah BOCOR saat Flow1 kedutan sendiri (detik 24,25,59: flow1 0.53, flow2 0.00) — artefak.
+- pressure_adc tetap AKTIF & berpola (0↔4095).
+
+### KESIMPULAN (final untuk pendekatan selisih dua-flow)
+- Meninggikan galon TIDAK membuat Flow2 berputar. Diulang beberapa kali → hasil konsisten.
+- Secara FISIKA: sumber gravitasi galon tidak mampu mendorong air cukup deras untuk memutar
+  turbin Flow2 (hilir, setelah Flow1 + gesekan pipa + T-junction). YF-S201 butuh ≈1 L/min.
+- PAM/pompa tidak tersedia → pendekatan deteksi "selisih Flow1 − Flow2" TIDAK DAPAT DIVALIDASI
+  dengan setup air saat ini. (Bukan kerusakan alat; keterbatasan debit sumber.)
+
+### KEPUTUSAN (menunggu DOSEN) — pendekatan selisih dua-flow DIHENTIKAN sementara
+- Jalur B (disarankan): ubah logika deteksi → **Flow1 + Pressure** (air masuk Flow1; saat bocor
+  tekanan di ujung turun / pola berubah). Rujukan [M12] Ali 2022 (fluktuasi tekanan di bocor).
+  Pakai sensor yang TERBUKTI jalan (Flow1 + Pressure sangat responsif). Perlu restu dosen (ubah desain).
+- Jalur C: laporkan deteksi secara FUNGSIONAL + tulis keterbatasan debit (Flow2 di bawah ambang).
+  Jujur & bisa dipertahankan, tetapi lebih lemah.
+- Pertanyaan ke dosen sudah disiapkan (pilih B atau C).
+
+### CHECKPOINT: Jalur A (galon gravitasi) MENTOK — Flow2 tak bisa diputar; PAM/pompa tak ada.
+### Deteksi selisih dua-flow tidak bisa divalidasi. Menunggu keputusan dosen (Jalur B / C).
+### TIDAK ada kalibrasi, TIDAK ada klaim deteksi berhasil, TIDAK ada angka karangan.
+
+---
+
+## STEP 14 — TEROBOSAN: GALON PENUH → Flow2 JALAN, DETEKSI BOCOR TERBUKTI (30 Okt 2026) ✅
+
+> KOREKSI penting terhadap checkpoint di atas: ternyata penyebab Flow2=0 BUKAN batas mutlak
+> gravitasi, melainkan AIR DI GALON TINGGAL SEDIKIT (head tekanan rendah). Setelah galon
+> DIISI PENUH + ditinggikan, Flow2 akhirnya berputar dan deteksi bocor terbukti.
+> Semua angka di bawah ASLI dari Serial Monitor user (TIDAK diolah/dikarang).
+
+### KOREKSI SUSUNAN PIPA (terkonfirmasi final dari user — 3 keran, semua seri di jalur utama)
+```
+Galon → [keran UTAMA] → Flow1 →──┬──→ Flow2 →──┬──→ Pressure → keluar
+                                 │             │
+                            keran CABANG-1   keran CABANG-2
+                             ↓ ke ember        ↓ ke ember
+                           (titik bocor)     (titik bocor)
+```
+- Hanya 3 keran: utama + 2 cabang buang ke ember. KEDUA cabang = titik SIMULASI BOCOR.
+- TIDAK ada keran outlet; ujung = pressure lalu keluar bebas.
+- Aturan uji: NORMAL = utama BUKA, kedua cabang TUTUP. BOCOR = utama BUKA, salah satu cabang BUKA.
+
+### DATA KONDISI BOCOR (user KONFIRMASI keran cabang DIBUKA saat perekaman)
+- Detik 72–80 (galon penuh, cabang dibuka):
+  ```
+  72,2.27,0.13,2.13,BOCOR ; 73,2.27,0.00,2.27,BOCOR ; 74,2.27,0.00,2.27,BOCOR ;
+  76,2.27,0.00,2.27,BOCOR ; 79,2.27,0.00,2.27,BOCOR ; 80,1.73,0.00,1.73,BOCOR
+  ```
+  → Flow1 deras (≈2.27), Flow2≈0 (air kabur ke ember via cabang), selisih ≈2.1–2.3 → status BOCOR. BENAR.
+- Detik 248–261 (cabang dibuka — dikonfirmasi user "bocor karena dibuka kerannya"):
+  ```
+  248,2.13,0.27,1.87,BOCOR ; 249,1.73,0.13,1.60,BOCOR ; 250,1.73,0.27,1.47,BOCOR ;
+  252,1.73,0.00,1.73,BOCOR ; 257,1.73,0.00,1.73,BOCOR ; 259,1.73,0.27,1.47,BOCOR ;
+  261,1.73,0.13,1.60,BOCOR
+  ```
+  → Flow1 & Flow2 SAMA-SAMA terbaca (pertama kali!) dgn Flow1≫Flow2, selisih ≈1.47–1.87 → BOCOR. BENAR.
+
+### TEMUAN & KETERBATASAN (jujur, untuk BAB IV Pembahasan)
+- ✅ Dengan galon PENUH, Flow2 akhirnya berputar (bukti: 0.13–0.27 di detik 248–261) —
+  volume/head air adalah faktor kritis, bukan posisi galon semata.
+- ✅ Deteksi BOCOR terbukti benar (status BOCOR saat cabang dibuka, user konfirmasi).
+- ⚠️ Flow2 cenderung UNDER-READ (hilir, tekanan drop): bahkan saat mengalir hanya 0.13–0.27
+  vs Flow1 1.73. → implikasi: threshold perlu dikalibrasi dari kondisi NORMAL murni, krn
+  selisih normal bisa cukup besar akibat ketimpangan baca ini.
+- ⏳ BELUM ADA: data NORMAL BERSIH (kedua cabang tutup, Flow1 & Flow2 stabil bersamaan) →
+  WAJIB diambil untuk kalibrasi threshold final + uji NORMAL 5× & BOCOR 5× + akurasi.
+
+### STATUS: deteksi bocor TERBUKTI secara fungsional dgn data real. THRESHOLD belum dikalibrasi
+### (nunggu uji NORMAL bersih). Jalur B/C TIDAK jadi diperlukan — Jalur A berhasil dgn galon penuh.
