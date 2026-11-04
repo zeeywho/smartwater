@@ -124,17 +124,32 @@ void loop() {
     if (flow1 > FLOW_MAX_VALID) flow1 = 0;
     if (flow2 > FLOW_MAX_VALID) flow2 = 0;
 
-    // ===== LOGIKA DETEKSI: NORMAL vs BOCOR =====
-    // Ada aliran terdeteksi di salah satu flow sensor (air keluar via cabang) => BOCOR.
-    // Tidak ada aliran => NORMAL.
-    // (Lokalisasi titik tidak dipakai sebagai status: pada susunan seri, sensor hulu
-    //  hampir selalu ikut mengalir & sensor hilir under-read pada debit gravitasi rendah,
-    //  sehingga lokalisasi belum andal -> dibahas sebagai pengembangan lanjutan.)
-    bool adaAliran = (flow1 > AMBANG_FLOW) || (flow2 > AMBANG_FLOW);
-    const char* status = adaAliran ? "BOCOR" : "NORMAL";
-    // "titik" = info tambahan indikatif (sensor mana yg dominan), BUKAN penentu status.
-    const char* titik = !adaAliran ? "-" : (flow2 > flow1 ? "TITIK_2" : "TITIK_1");
-    // (pressure = indikator PENDUKUNG; cenderung turun saat ada aliran keluar/bocor.)
+    // ===== LOGIKA DETEKSI + LOKALISASI TITIK (per-titik + penguat pressure) =====
+    // Susunan SERI: Galon -> Flow1 -> Cabang-1 -> Flow2 -> Cabang-2 -> (ujung).
+    // Prinsip (sistem ujung tertutup / buntu -> air hanya mengalir saat ada kebocoran):
+    //   - Bocor CABANG-1 (antara Flow1 & Flow2): air keluar sebelum Flow2
+    //       => Flow1 mengalir, Flow2 ~0                      => TITIK_1
+    //   - Bocor CABANG-2 (setelah Flow2): air lewat Flow1 DAN Flow2 baru keluar
+    //       => Flow1 mengalir DAN Flow2 ikut mengalir         => TITIK_2
+    //   - Tidak ada aliran                                     => NORMAL
+    // Pembeda titik = APAKAH Flow2 ikut mengalir.
+    // PENGUAT (pressure): saat bocor, tekanan di ujung cenderung TURUN; dipakai sebagai
+    //   konfirmasi tambahan (indikatif). Catat pola pressure saat kalibrasi.
+    bool alir1 = (flow1 > AMBANG_FLOW);
+    bool alir2 = (flow2 > AMBANG_FLOW);
+    bool adaAliran = alir1 || alir2;
+    const char* status;   // NORMAL / BOCOR
+    const char* titik;    // "-" / "TITIK_1" / "TITIK_2"
+    if (!adaAliran) {
+      status = "NORMAL"; titik = "-";
+    } else if (alir2) {
+      // Flow2 ikut mengalir => air sempat lewat Flow2 => bocor di hilir (cabang-2)
+      status = "BOCOR"; titik = "TITIK_2";
+    } else {
+      // hanya Flow1 yang mengalir (Flow2 ~0) => air hilang sebelum Flow2 => cabang-1
+      status = "BOCOR"; titik = "TITIK_1";
+    }
+    // (pressure = indikator PENDUKUNG; dikirim apa adanya utk dianalisis & dikonfirmasi.)
 
     // kirim JSON ke dashboard (ada status + titik + pressure pendukung)
     char payload[240];
